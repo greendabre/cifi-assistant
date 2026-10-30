@@ -48,17 +48,17 @@ CIFI Assistant/
 │       ├── main/
 │       │   ├── AndroidManifest.xml          # Services, Permissions, Launcher Activity
 │       │   ├── assets/
-│       │   │   └── cifi_profile_analyzer.html # Original optical web analyzer
+│       │   │   └── cifi_profile_analyzer.html # Original optical web analyzer reference
 │       │   ├── res/
-│       │   │   ├── drawable/                # Cyber-themed pill & vector icons
+│       │   │   ├── drawable/                # Cyber-themed scanner orb & vector icons
 │       │   │   ├── layout/
 │       │   │   │   ├── activity_main.xml    # Permission onboarding & Memory Bank manager
-│       │   │   │   ├── overlay_floating_pill.xml # Floating pill with Scan & Dossier buttons
-│       │   │   │   └── dialog_dossier_preview.xml # Live in-app Dossier viewer
+│       │   │   │   ├── overlay_floating_circle.xml # Draggable circular scanner orb
+│       │   │   │   └── dialog_dossier_preview.xml  # Live in-app Dossier viewer
 │       │   │   ├── values/                  # Cyber scifi color palette, strings, themes
-│       │   │   └── xml/                     # Accessibility config & security rules
+│       │   │   └── xml/                     # Backup & data extraction rules
 │       │   └── java/com/cifi/assistant/
-│       │       ├── MainActivity.kt          # Permission onboarding & live status
+│       │       ├── MainActivity.kt          # Permission onboarding, orb toggle & live status
 │       │       ├── model/
 │       │       │   ├── PageId.kt            # 9-page enum & metadata
 │       │       │   ├── GemUpgradeData.kt    # 52 unique GU definitions (v1.1.6)
@@ -66,16 +66,19 @@ CIFI Assistant/
 │       │       ├── repository/
 │       │       │   └── DossierRepository.kt # 9-slot singleton store & dossier compilers
 │       │       ├── engine/
-│       │       │   ├── PixelAnalyzer.kt     # Fast RGB tab detector (Y = 35.5%)
-│       │       │   └── OpticalAnalysisEngine.kt # ML Kit OCR & metric parser
+│       │       │   ├── PixelAnalyzer.kt     # Fast RGB tab detector
+│       │       │   └── OpticalAnalysisEngine.kt # ML Kit OCR & high-contrast crop filter
 │       │       ├── service/
-│       │       │   ├── CifiAccessibilityService.kt # Window event listener for CIFI
-│       │       │   └── CaptureService.kt    # Foreground service & single-frame capture
+│       │       │   └── CaptureService.kt    # Foreground service, single-frame capture & notification controls
 │       │       ├── overlay/
-│       │       │   └── OverlayController.kt # Draggable WindowManager overlay
+│       │       │   └── OverlayController.kt # Draggable WindowManager circular orb overlay
 │       │       └── util/
-│       │           ├── NotificationHelper.kt # Foreground service notifications
+│       │           ├── CifiNumberUtils.kt   # Scientific notation & OCR token sanitizer
+│       │           ├── DebugScanStorage.kt  # Diagnostic scan & OCR output retention
+│       │           ├── NotificationHelper.kt # Foreground notification with Hide/Show Orb & Turn Off actions
 │       │           └── ClipboardHelper.kt   # System clipboard integration
+│       ├── androidTest/java/com/cifi/assistant/
+│       │   └── OcrDiagnosticTest.kt         # On-device OCR verification across all 9 pages
 │       └── test/java/com/cifi/assistant/
 │           └── DossierTest.kt               # Unit tests for unlock logic & formatting
 ├── build.gradle.kts                         # Root Gradle config
@@ -85,42 +88,43 @@ CIFI Assistant/
 
 ---
 
-## 🚀 How to Build & Run
+## 📥 Installation (Pre-built APK)
+
+Download the latest **`CIFI-Assistant-v1.1.0.apk`** from the [**GitHub Releases page**](https://github.com/greendabre/cifi-assistant/releases/latest) and install it on your Android device (Android 8.0 / API 26 or newer).
+
+## 🚀 How to Build from Source
 
 ### 1. Requirements
 - **Android Studio** (Koala / Ladybug or newer recommended)
-- **Android SDK** API 35 (compileSdk & targetSdk 35, minSdk 26)
-- **Java 17** (standard in modern Android Studio)
+- **Android SDK** API 35 (`compileSdk = 35`, `targetSdk = 35`, `minSdk = 26`)
+- **Java 17 or 21**
 
 ### 2. Opening in Android Studio
 1. Open Android Studio.
-2. Select **Open** and choose `G:\My Drive\Coding\CIFI Assistant` (or the repository root folder).
+2. Select **Open** and choose the repository root folder (`CIFI Assistant`).
 3. Allow Gradle to sync.
-4. Click **Run** (`Shift + F10`) to deploy to your physical Android device or emulator.
+4. Click **Run** (`Shift + F10`) to deploy to your physical Android device.
 
 ---
 
 ## 🔒 Permission Setup in App
 
-When you launch **CIFI Assistant** for the first time, tap the three permission buttons in order:
-1. **Display Over Other Apps**: Enables Android `SYSTEM_ALERT_WINDOW` so the floating pill can appear above CIFI.
-2. **Accessibility Service**: Directs you to Android Accessibility settings. Toggle on **CIFI Assistant** so the app can wake up automatically when CIFI launches and hide when you minimize it.
-3. **Screen Capture Token**: Prompts the standard Android "Start recording or casting with CIFI Assistant?" dialog. Grant this once per session to enable instant on-demand single-frame scans.
+When you launch **CIFI Assistant**, only **2 permissions** are needed (no Accessibility Service required):
+1. **Floating Overlay (`SYSTEM_ALERT_WINDOW`)**: Allows the compact circular scanner orb to display on top of CIFI.
+2. **Screen Capture & Notification Controls (`MediaProjection`)**: Prompts the standard Android screen capture permission dialog once per session so the orb can snap a single frame on tap and display the quick-action controls in your notification bar.
 
 ---
 
-## 🎮 In-Game Workflow
+## 🎮 In-Game Workflow & Notification Controls
 
-1. Open **Cell: Idle Factory Incremental (CIFI)**.
-2. The **CIFI Assistant** pill will automatically slide into view:
-   ```
-   [ ::: | ⚡ Scan [0/9] | 📋 Dossier | ✕ ]
-   ```
-3. Navigate to any page you want to capture (e.g. *Inventory*, *Stats*, or any of the *7 Gem* screens).
-4. Tap **`⚡ Scan`**.
-   - A single frame is snapped and analyzed in under 50ms.
-   - The badge updates: `⚡ Scan [1/9]`, `[2/9]`, etc.
-   - Rescanning a page safely overwrites it with the newest values.
-5. Once your screens are captured, tap **`📋 Dossier`**.
-   - Your full, formatted multi-page report is instantly copied to your clipboard!
-   - Paste directly into Discord, Reddit, or import into **cifi-toolkit**.
+1. Open **CIFI Assistant** and tap **Authorize** (or **Turn On Assistant**).
+2. The draggable circular **Scanner Orb** (`[0/9]`) appears on screen, and a persistent control notification is added to your notification shade:
+   - **`Hide Orb` / `Show Orb`**: Hide or show the floating scanner orb anytime from the notification bar without losing your active capture session.
+   - **`Copy Dossier`**: Copy your compiled 9-page Dossier report directly from the notification.
+   - **`Turn Off`**: Shut down the capture service, remove the floating orb, and dismiss the notification.
+3. Open **Cell: Idle Factory Incremental (CIFI)** and navigate to any of the 9 supported pages (*Inventory*, *Stats*, or any of the *7 Gem* screens).
+4. **Tap the Floating Orb**:
+   - The orb briefly hides itself so it never appears in the screenshot, snaps a single frame, and runs on-device OCR + high-contrast crop filtering.
+   - The orb pops with the detected page's icon (🎒, 📊, 🌌, ⏳, 💡, ⚡, 🧲, 🪐, or 🧬), increments the `[X/9]` badge, and **automatically copies the updated full Dossier to your clipboard**.
+   - Rescanning any page safely overwrites that slot with the newest values.
+5. Paste your Dossier directly into Discord, Reddit, or **cifi-toolkit** (or open **CIFI Assistant** to preview the report or copy as JSON).
