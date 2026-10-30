@@ -1,0 +1,28 @@
+<resources>
+    <string name="app_name">CIFI Assistant</string>
+    <string name="accessibility_service_description">Detects when Cell: Idle Factory Incremental (CIFI) is in the foreground to show the lightweight floating capture overlay.</string>
+    <string name="notification_channel_name">CIFI Screen Capture</string>
+    <string name="notification_channel_desc">Active during screen capture for CIFI dossier extraction</string>
+    <string name="service_running_title">CIFI Assistant Ready</string>
+    <string name="service_running_text">Tap the floating overlay in CIFI to scan profile or gems.</string>
+
+    <!-- Overlay Buttons -->
+    <string name="btn_scan">⚡ Scan</string>
+    <string name="btn_dossier">📋 Dossier</string>
+    <string name="btn_close">✕</string>
+
+    <!-- Prompts & Dialogs -->
+    <string name="permission_overlay_title">Display Over Other Apps</string>
+    <string name="permission_overlay_desc">Allows the floating Scan and Dossier buttons to appear over CIFI.</string>
+    <string name="permission_accessibility_title">Accessibility Service</string>
+    <string name="permission_accessibility_desc">Automatically shows the buttons only when CIFI is open and hides them when minimized.</string>
+    <string name="permission_screen_capture_title">Screen Capture Session</string>
+    <string name="permission_screen_capture_desc">Grants permission to take on-demand single-frame screenshots when you tap Scan.</string>
+
+    <!-- Status strings -->
+    <string name="status_granted">Active ✓</string>
+    <string name="status_missing">Required</string>
+    <string name="action_grant">Enable</string>
+    <string name="dossier_copied">Full Dossier copied to clipboard!</string>
+    <string name="page_scanned">Page captured: %1$s (%2$d/9)</string>
+</resources>

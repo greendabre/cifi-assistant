@@ -1,0 +1,2026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CIFI Profile & Multi-Page Optical Analyzer</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Rajdhani', sans-serif;
+      background-color: #060511;
+      color: #e2e8f0;
+    }
+    .font-mono-code {
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .font-scifi {
+      font-family: 'Chakra Petch', sans-serif;
+    }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090717;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e1b4b;
+      border-radius: 3px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #06b6d4;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#060511] text-slate-100 p-2 sm:p-4">
+
+  <!-- TOP HEADER -->
+  <header class="flex flex-wrap items-center justify-between gap-3 border-b border-indigo-950/80 pb-3 mb-3">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-gradient-to-tr from-cyan-500 via-indigo-600 to-amber-500 p-0.5 flex items-center justify-center shadow-lg shadow-cyan-500/20">
+        <div class="w-full h-full bg-[#080614] rounded-[6px] flex items-center justify-center">
+          <svg class="w-4 h-4 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+            <polyline points="2 17 12 22 22 17"></polyline>
+            <polyline points="2 12 12 17 22 12"></polyline>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <h1 class="text-base sm:text-lg font-scifi font-bold tracking-wider text-cyan-400 flex items-center gap-2">
+          CIFI MULTI-PAGE OPTICAL ANALYZER
+        </h1>
+        <p class="text-[11px] text-slate-400">9-Page Memory Bank • Text-Based Title Matching • Clean Dossier Export</p>
+      </div>
+    </div>
+
+    <!-- Memory Store Status & Dossier Actions -->
+    <div class="flex items-center gap-2">
+      <div id="memoryCounterBadge" class="px-2.5 py-1 rounded bg-indigo-950/80 border border-indigo-800 text-[11px] font-mono text-cyan-300">
+        Memory Bank: 0 / 9 Pages
+      </div>
+      <button id="runAnalysisBtn" onclick="triggerAnalysis()" class="px-3 py-1 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold font-scifi transition flex items-center gap-1.5 shadow-lg shadow-cyan-500/20">
+        <span>⚡ Run Analysis</span>
+        <span id="bufferCountBadge" class="px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-200 text-[10px] font-mono">0 queued</span>
+      </button>
+      <button onclick="copyFullDossier()" class="px-3 py-1 rounded bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold font-scifi transition flex items-center gap-1.5 shadow-lg shadow-indigo-500/20">
+        <span>Copy Full Dossier</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- PAGES NAVIGATION BAR -->
+  <div class="bg-[#0b091f] border border-indigo-950 rounded-xl p-2 mb-3 shadow-lg flex flex-wrap items-center justify-between gap-2">
+    <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0 max-w-full" id="pagesNavContainer">
+      <!-- Generated dynamically for all 9 pages -->
+    </div>
+    <div class="text-[11px] font-mono text-slate-400 flex items-center gap-2 pl-2 border-l border-indigo-950">
+      <button onclick="clearCurrentPage()" class="text-rose-400 hover:underline">Reset Active Page</button>
+      <span>•</span>
+      <button onclick="clearAllPages()" class="text-slate-400 hover:underline">Clear All (0/9)</button>
+    </div>
+  </div>
+
+  <!-- MAIN SIDE-BY-SIDE LAYOUT -->
+  <main class="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1 items-start">
+
+    <!-- LEFT COLUMN: IMAGE CANVAS WORKSPACE -->
+    <div class="lg:col-span-5 flex flex-col gap-3 bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3 shadow-xl">
+      
+      <!-- Upload Dropzone (Supports Multiple Files & Staging) -->
+      <div id="dropZone" class="border-2 border-dashed border-indigo-800 hover:border-cyan-400 bg-[#070614]/80 rounded-lg p-3 text-center transition cursor-pointer relative group">
+        <input type="file" id="fileInput" accept="image/*" multiple class="absolute inset-0 opacity-0 cursor-pointer w-full h-full z-10">
+        <div class="flex flex-col items-center justify-center gap-1 text-xs text-slate-300">
+          <svg class="w-5 h-5 text-cyan-400 group-hover:scale-110 transition duration-150" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+          <span class="font-semibold text-cyan-300">Drop, Select, or Paste Screenshots (<kbd class="px-1 py-0.5 rounded bg-indigo-950 text-cyan-200 font-mono text-[10px] border border-indigo-800">Ctrl+V</kbd>)</span>
+          <span class="text-[10px] text-slate-400">Pasted images enter the Staging Buffer. Analysis runs on demand or automatically when 9 images are staged.</span>
+        </div>
+      </div>
+
+      <!-- STAGING BUFFER AREA -->
+      <div id="bufferSection" class="bg-[#070614] border border-indigo-950 rounded-lg p-2.5 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-scifi font-bold text-amber-400 uppercase tracking-wider">Staging Buffer</span>
+            <span id="bufferStatusTag" class="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950/60 text-slate-400 border border-indigo-900">0 Images Waiting</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="triggerAnalysis()" class="text-[11px] font-scifi font-bold text-cyan-300 hover:text-cyan-200 hover:underline">Start Analysis ▶</button>
+            <span class="text-slate-600">•</span>
+            <button onclick="clearBuffer()" class="text-[10px] font-mono text-slate-400 hover:text-rose-400 transition">Clear Buffer</button>
+          </div>
+        </div>
+        
+        <!-- Buffer thumbnails carousel -->
+        <div id="bufferThumbsList" class="flex items-center gap-2 overflow-x-auto pb-1 min-h-[58px] bg-black/40 rounded p-1.5 border border-indigo-950/60">
+          <span class="text-[11px] text-slate-500 italic px-2">No images in buffer. Drop or paste screenshots to stage them here.</span>
+        </div>
+      </div>
+
+      <!-- Canvas Viewport -->
+      <div class="relative w-full bg-black rounded-lg overflow-hidden border border-indigo-950 flex items-center justify-center min-h-[500px]">
+        <canvas id="viewCanvas" class="max-w-full max-h-[820px] w-auto h-auto object-contain block"></canvas>
+      </div>
+
+      <!-- Canvas Footer Info Bar -->
+      <div class="flex flex-wrap items-center justify-between text-[11px] font-mono text-slate-400 px-1 gap-2">
+        <span id="lblCanvasInfo">Blueprint Mode (Awaiting Upload)</span>
+        <span id="lblPageStatus" class="flex items-center gap-1.5 text-amber-400">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+          Page Status: Empty (All Zeroes)
+        </span>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN: DYNAMIC DATA INSPECTOR -->
+    <div class="lg:col-span-7 flex flex-col gap-3">
+
+      <!-- CURRENT PAGE HEADER BANNER WITH CATEGORY OVERRIDE -->
+      <div id="pageHeaderBanner" class="bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3 shadow-lg flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div id="bannerIcon" class="w-10 h-10 rounded-lg bg-indigo-950 border border-indigo-800 flex items-center justify-center text-lg font-bold overflow-hidden shadow">
+            📄
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <span id="bannerCategoryTag" class="text-[10px] font-mono tracking-widest uppercase text-cyan-400">PAGE 1 OF 9</span>
+              <span id="bannerUploadState" class="px-2 py-0.2 rounded text-[10px] font-mono bg-amber-950/60 text-amber-300 border border-amber-800">Awaiting Upload</span>
+            </div>
+            <h2 id="bannerPageTitle" class="text-base sm:text-lg font-scifi font-bold tracking-wider text-white">Player Profile (Inventory)</h2>
+            <div id="matchedTitleBadge" class="text-[11px] font-mono flex items-center gap-2 mt-0.5">
+              <span class="text-slate-400">Detected Title:</span>
+              <span id="lblMatchedTitle" class="text-emerald-300 font-semibold">---</span>
+              <div id="titleCropThumb" class="hidden h-5 max-w-[140px] rounded border border-indigo-800 overflow-hidden bg-black/60 items-center justify-center"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex flex-col items-end gap-1 text-[11px] font-mono">
+          <div class="text-slate-400">Memory Slot: <span id="bannerTimestamp" class="text-slate-300">No Image in Memory</span></div>
+          <div class="flex items-center gap-1.5">
+            <span class="text-[10px] text-slate-400">Reassign Page:</span>
+            <select id="reassignSelect" class="bg-[#070614] border border-indigo-800 rounded px-1.5 py-0.5 text-cyan-300 text-[10px] focus:outline-none" onchange="reassignCurrentImage(this.value)">
+              <option value="" disabled selected>Move to...</option>
+              <option value="profile_inventory">Profile (Inventory)</option>
+              <option value="profile_stats">Profile (Stats)</option>
+              <option value="gem_exodus">The Exodus Gem</option>
+              <option value="gem_temp">Gem of Temporality</option>
+              <option value="gem_inno">Gem of Innovation</option>
+              <option value="gem_pwr">Gem of Power</option>
+              <option value="gem_attr">Gem of Attraction</option>
+              <option value="gem_creat">Gem of Creation</option>
+              <option value="gem_evo">The Evolution Gem</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- DYNAMIC PAGE BODY CONTAINER -->
+      <div id="activePageContent" class="flex flex-col gap-3">
+        <!-- Rendered dynamically according to the selected page -->
+      </div>
+
+      <!-- EXPORT / REPORT VIEWER -->
+      <div class="bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3 shadow-lg flex flex-col gap-2">
+        <div class="flex items-center justify-between border-b border-indigo-950 pb-2">
+          <span class="text-xs font-scifi font-bold text-cyan-400 tracking-wider uppercase">Active Page Extracted Report</span>
+          <div class="flex items-center gap-2">
+            <button onclick="copyCurrentPageReport()" class="px-2.5 py-0.5 rounded bg-cyan-600 hover:bg-cyan-500 text-white text-xs font-bold transition">Copy Text</button>
+            <button onclick="copyCurrentPageJSON()" class="px-2.5 py-0.5 rounded bg-indigo-950 hover:bg-indigo-900 border border-indigo-800 text-indigo-300 text-xs font-bold transition">Copy JSON</button>
+          </div>
+        </div>
+        <textarea id="reportOutput" rows="7" readonly class="w-full bg-[#070614] border border-indigo-950 rounded-lg p-2.5 text-xs font-mono-code text-cyan-300 leading-relaxed focus:outline-none select-all"></textarea>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toastMessage" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition duration-300 px-4 py-2.5 rounded-lg bg-cyan-600 text-slate-950 font-bold text-xs shadow-2xl flex items-center gap-2">
+    <svg class="w-4 h-4 text-slate-950 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+    <span id="toastText">Data Copied to Clipboard!</span>
+  </div>
+
+  <script>
+    // 9 PAGES DEFINITIONS
+    const PAGE_DEFS = [
+      { id: "profile_inventory", name: "Profile (Inventory)", short: "Inventory", icon: "🎒", group: "profile" },
+      { id: "profile_stats", name: "Profile (Stats)", short: "Stats", icon: "📊", group: "profile" },
+      { id: "gem_exodus", name: "The Exodus Gem", short: "Exodus", icon: "🌌", color: "#a855f7", group: "gem", subtitle: "ORIGINS & ENDINGS" },
+      { id: "gem_temp", name: "Gem of Temporality", short: "Temporality", icon: "⏳", color: "#ec4899", group: "gem", subtitle: "AEON'S EQUILIBRIUM" },
+      { id: "gem_inno", name: "Gem of Innovation", short: "Innovation", icon: "💡", color: "#eab308", group: "gem", subtitle: "COSMIC CREATOR" },
+      { id: "gem_pwr", name: "Gem of Power", short: "Power", icon: "⚡", color: "#3b82f6", group: "gem", subtitle: "FOUNDATION OF REALITY" },
+      { id: "gem_attr", name: "Gem of Attraction", short: "Attraction", icon: "🧲", color: "#06b6d4", group: "gem", subtitle: "STELLAR FORCES" },
+      { id: "gem_creat", name: "Gem of Creation", short: "Creation", icon: "🪐", color: "#f97316", group: "gem", subtitle: "MATTER & PHYSICALITY" },
+      { id: "gem_evo", name: "The Evolution Gem", short: "Evolution", icon: "🧬", color: "#22c55e", group: "gem", subtitle: "LIFE, GROWTH & ADAPTATION" }
+    ];
+
+    // MASTER GEM UPGRADES UNLOCK STRUCTURE (v1.1.6 Report - 52 Unique GUs)
+    const GEM_UPGRADE_DEFINITIONS = {
+      gem_exodus: [
+        { name: "CELLS BONUS", reqLevel: 1, sampleVal: "x2.36e62", sampleRank: "74 / 999" },
+        { name: "SHARD BONUS", reqLevel: 2, sampleVal: "x1.39e39", sampleRank: "40 / 999" },
+        { name: "RP BONUS", reqLevel: 3, sampleVal: "x2.87e40", sampleRank: "32 / 999" },
+        { name: "MP BONUS", reqLevel: 4, sampleVal: "x57.26sx", sampleRank: "27 / 999" },
+        { name: "AP BONUS", reqLevel: 4, sampleVal: "x139.26k", sampleRank: "18 / 999" },
+        { name: "MATS BONUS", reqLevel: 5, sampleVal: "x69.38", sampleRank: "9 / 999" },
+        { name: "ORBS BONUS", reqLevel: 5, sampleVal: "x1.31", sampleRank: "2 / 999" }
+      ],
+      gem_temp: [
+        { name: "MP BONUS (LMS)", reqLevel: 1, sampleVal: "x586.51k", sampleRank: "50 / 50" },
+        { name: "MP BONUS (TICKS)", reqLevel: 2, sampleVal: "x860.91k", sampleRank: "21 / 50" },
+        { name: "MP BONUS (ZAG RANK)", reqLevel: 3, sampleVal: "x5.85e149", sampleRank: "6 / 10" },
+        { name: "LM MAX LEVELS (LOW TIER)", reqLevel: 3, sampleVal: "+195", sampleRank: "13 / 100" },
+        { name: "MP BONUS (ZAG CREW)", reqLevel: 3, sampleVal: "x4.91e51", sampleRank: "17 / 30" },
+        { name: "MP BONUS (LOOP RESETS)", reqLevel: 3, sampleVal: "x1.18e105", sampleRank: "5 / 30" }
+      ],
+      gem_inno: [
+        { name: "STUDIES PER STUDY", reqLevel: 1, sampleVal: "+147.00", sampleRank: "32 / 50" },
+        { name: "CELLS BONUS", reqLevel: 2, sampleVal: "x1.01e121", sampleRank: "10 / 50" },
+        { name: "MP BONUS", reqLevel: 2, sampleVal: "x2.99e71", sampleRank: "8 / 50" },
+        { name: "SHARDS BONUS", reqLevel: 2, sampleVal: "x3.58e63", sampleRank: "7 / 50" },
+        { name: "RP BONUS", reqLevel: 2, sampleVal: "x2.40e55", sampleRank: "6 / 50" },
+        { name: "AP BONUS", reqLevel: 2, sampleVal: "x8.68e46", sampleRank: "5 / 50" },
+        { name: "MATS BONUS", reqLevel: 3, sampleVal: "x125.37k", sampleRank: "2 / 50" },
+        { name: "BLUEPRINTS", reqLevel: 3, sampleVal: "+291", sampleRank: "2 / 8" },
+        { name: "INNOVATION CORES", reqLevel: 3, sampleVal: "+146", sampleRank: "1 / 4" }
+      ],
+      gem_attr: [
+        { name: "LOOT (BORGE)", reqLevel: 1, sampleVal: "x10.749", sampleRank: "27 / 50" },
+        { name: "LOOT (OZZY)", reqLevel: 2, sampleVal: "x3.231", sampleRank: "23 / 50" },
+        { name: "CATCH-UP (BORGE/OZZY)", reqLevel: 3, sampleVal: "x1.649", sampleRank: "5 / 5" },
+        { name: "LOOT (KNOX)", reqLevel: 4, sampleVal: "x1.259", sampleRank: "6 / 50" },
+        { name: "CATCH-UP (KNOX)", reqLevel: 4, sampleVal: "x1.222", sampleRank: "2 / 5" },
+        { name: "SHIP EVO BONUS", reqLevel: 4, sampleVal: "^1.109", sampleRank: "8 / 100" }
+      ],
+      gem_creat: [
+        { name: "MECHS BONUS CAP", reqLevel: 1, sampleVal: "x3.98e145", sampleRank: "14 / 999" },
+        { name: "HARDWARE BONUS", reqLevel: 2, sampleVal: "x100.00sp", sampleRank: "20 / 20" },
+        { name: "SOFTWARE BONUS", reqLevel: 2, sampleVal: "x8.34n", sampleRank: "14 / 20" },
+        { name: "CELLS BONUS", reqLevel: 3, sampleVal: "x3.32e783", sampleRank: "10 / 15" },
+        { name: "MP BONUS", reqLevel: 3, sampleVal: "x6.20e159", sampleRank: "10 / 15" },
+        { name: "SHARDS BONUS", reqLevel: 3, sampleVal: "x6.20e159", sampleRank: "10 / 15" },
+        { name: "RP BONUS", reqLevel: 3, sampleVal: "x7.15e100", sampleRank: "9 / 15" },
+        { name: "TRINKET TIER BONUS", reqLevel: 4, sampleVal: "36.00", sampleRank: "9 / 80" },
+        { name: "BORGE STAT BONUS", reqLevel: 4, sampleVal: "x1.03", sampleRank: "3 / 50" },
+        { name: "OZZY STAT BONUS", reqLevel: 4, sampleVal: "x1.06", sampleRank: "6 / 50" },
+        { name: "KNOX STAT BONUS", reqLevel: 4, sampleVal: "x1.03", sampleRank: "3 / 50" }
+      ],
+      gem_pwr: [
+        { name: "CRADLE BONUS", reqLevel: 1, sampleVal: "x4.32e65", sampleRank: "14 / 50" },
+        { name: "AUXESIA BONUS", reqLevel: 1, sampleVal: "x2.04e44", sampleRank: "11 / 50" },
+        { name: "ZAGREUS BONUS", reqLevel: 1, sampleVal: "x5.00e50", sampleRank: "10 / 50" },
+        { name: "HEPHAESTUS BONUS", reqLevel: 1, sampleVal: "x7.85e78", sampleRank: "9 / 50" },
+        { name: "DEMETER BONUS", reqLevel: 1, sampleVal: "x663.97o", sampleRank: "7 / 50" },
+        { name: "KOIOS BONUS", reqLevel: 1, sampleVal: "x1.47sx", sampleRank: "6 / 50" },
+        { name: "ZEUS BONUS", reqLevel: 1, sampleVal: "x7.69t", sampleRank: "6 / 50" },
+        { name: "BLUEPRINTS", reqLevel: 1, sampleVal: "+208", sampleRank: "13 / 50" },
+        { name: "INNOVATION CORES", reqLevel: 1, sampleVal: "+104", sampleRank: "13 / 50" }
+      ],
+      gem_evo: [
+        { name: "ALL GENS OUTPUT", reqLevel: 1, sampleVal: "x1.00e48", sampleRank: "6 / 50" },
+        { name: "BONUS LP", reqLevel: 1, sampleVal: "+350", sampleRank: "7 / 250" },
+        { name: "MK9 STABILITY", reqLevel: 1, sampleVal: "0.210", sampleRank: "4 / 36" },
+        { name: "MK9 RESONANCE", reqLevel: 1, sampleVal: "x4.61sp", sampleRank: "2 / 8" }
+      ]
+    };
+
+    const INT_TO_ROMAN = ["---", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"];
+
+    // Multi-page memory store: all pages start completely empty with zero data
+    const memoryStore = {};
+
+    function initMemoryStore() {
+      PAGE_DEFS.forEach(p => {
+        memoryStore[p.id] = {
+          id: p.id,
+          name: p.name,
+          uploaded: false,
+          image: null,
+          timestamp: null,
+          data: createZeroDataForPage(p.id)
+        };
+      });
+    }
+
+    // Factory for completely empty/zero data structures
+    function createZeroDataForPage(pageId) {
+      if (pageId === "profile_inventory") {
+        return {
+          player: "---",
+          level: 0,
+          activeTab: "INVENTORY",
+          capturedDate: "---",
+          exodusGemLevel: "---",
+          exodusNodes: [false, false, false, false, false],
+          outerGems: {
+            evo: { level: "---", nodes: new Array(9).fill(false) },
+            temp: { level: "---", nodes: new Array(9).fill(false) },
+            inno: { level: "---", nodes: new Array(9).fill(false) },
+            pwr: { level: "---", nodes: new Array(9).fill(false) },
+            attr: { level: "---", nodes: new Array(9).fill(false) },
+            creat: { level: "---", nodes: new Array(9).fill(false) }
+          },
+          primaryResources: [
+            { key: "diamonds", label: "Diamonds", val: "0" },
+            { key: "tokens", label: "Tokens", val: "0" },
+            { key: "cells", label: "Cells", val: "0" },
+            { key: "mps", label: "MPs", val: "0" },
+            { key: "shards", label: "Shards", val: "0" },
+            { key: "rps", label: "RPs", val: "0" },
+            { key: "aps", label: "APs", val: "0" },
+            { key: "orbs", label: "Orbs", val: "0" }
+          ],
+          specialResources: [
+            { key: "cores", label: "Cores", val: "0" },
+            { key: "blueprints", label: "Blueprints", val: "0" },
+            { key: "dark_cores", label: "Dark Cores", val: "0" },
+            { key: "fragments", label: "Fragments", val: "0" }
+          ],
+          academyMaterials: [
+            { key: "difar", label: "Difar", val: "0" },
+            { key: "kento", label: "Kento", val: "0" },
+            { key: "chromium", label: "Chromium", val: "0" },
+            { key: "exon", label: "Exon", val: "0" },
+            { key: "organium", label: "Organium", val: "0" },
+            { key: "adamorphium", label: "Adamorphium", val: "0" },
+            { key: "moskom", label: "Moskom", val: "0" },
+            { key: "darkseid", label: "Darkseid", val: "0" },
+            { key: "tokenium", label: "Tokenium", val: "0" },
+            { key: "un1", label: "Unknown 1", val: "[LOCKED]", locked: true },
+            { key: "un2", label: "Unknown 2", val: "[LOCKED]", locked: true },
+            { key: "un3", label: "Unknown 3", val: "[LOCKED]", locked: true },
+            { key: "un4", label: "Unknown 4", val: "[LOCKED]", locked: true },
+            { key: "un5", label: "Unknown 5", val: "[LOCKED]", locked: true },
+            { key: "un6", label: "Unknown 6", val: "[LOCKED]", locked: true }
+          ],
+          hunterLoot: [
+            { key: "obsidian", label: "Obsidian", val: "0" },
+            { key: "behlium", label: "Behlium", val: "0" },
+            { key: "hbm", label: "HBM", val: "0" },
+            { key: "farahyte", label: "Farahyte", val: "0" },
+            { key: "galvarium", label: "Galvarium", val: "0" },
+            { key: "vectid", label: "Vectid", val: "0" },
+            { key: "glacium", label: "Glacium", val: "0" },
+            { key: "quartz", label: "Quartz", val: "0" },
+            { key: "tesseracts", label: "Tesseracts", val: "0" },
+            { key: "un7", label: "Unknown 1", val: "[LOCKED]", locked: true },
+            { key: "un8", label: "Unknown 2", val: "[LOCKED]", locked: true },
+            { key: "un9", label: "Unknown 3", val: "[LOCKED]", locked: true }
+          ]
+        };
+      }
+
+      if (pageId === "profile_stats") {
+        return {
+          player: "---",
+          level: 0,
+          activeTab: "STATS",
+          capturedDate: "---",
+          ouroboros: {
+            traversals: "0",
+            allTimeOrbs: "0",
+            timeCurrent: "00:00:00",
+            orbsAccumCurrent: "0",
+            highestMeltdown: "0",
+            inscriptions: "0",
+            mechsOwned: "0",
+            gadgetLevels: "0"
+          },
+          currentRunCones: {
+            green: 0,
+            red: 0,
+            blue: 0,
+            orange: 0
+          },
+          allTimeStats: [
+            { label: "Cells Gained", val: "0" },
+            { label: "Manual Gens", val: "0" },
+            { label: "Tech Up Levels", val: "0" },
+            { label: "MP Gained", val: "0" },
+            { label: "Loop Mods", val: "0" },
+            { label: "Loop Resets", val: "0" },
+            { label: "Shards Gained", val: "0" },
+            { label: "Milestone Levels", val: "0" },
+            { label: "RP Gained", val: "0" },
+            { label: "Research LVs", val: "0" },
+            { label: "AP Gained", val: "0" },
+            { label: "Gear Levels", val: "0" },
+            { label: "Cons. Projects", val: "0" },
+            { label: "Blueprints Gained", val: "0" },
+            { label: "Fragments Gained", val: "0" },
+            { label: "Relic Levels", val: "0" },
+            { label: "Borge Progress", val: "LV. 0 (S-0)" },
+            { label: "Ozzy Progress", val: "LV. 0 (S-0)" },
+            { label: "Knox Progress", val: "LV. 0 (S-0)" },
+            { label: "Slot 20", val: "???" }
+          ]
+        };
+      }
+
+      // Gem Detail Screens with Master Unlock Configurations
+      const gemMaxRanks = {
+        gem_exodus: 5,
+        gem_evo: 1,
+        gem_temp: 4,
+        gem_inno: 3,
+        gem_pwr: 3,
+        gem_attr: 4,
+        gem_creat: 4
+      };
+
+      const maxRank = gemMaxRanks[pageId] || 1;
+      const defs = GEM_UPGRADE_DEFINITIONS[pageId] || [];
+
+      return {
+        currentLevel: 0,
+        maxLevel: maxRank,
+        qualityLevel: `0 / ${maxRank}`,
+        romanLevel: "---",
+        maxReached: false,
+        upgradeCost: "---",
+        hud: { orbs: "0", level: 0, diamonds: 0, ticks: "0 ticks = 0.00s" },
+        nextTraits: [],
+        upgrades: defs.map(d => ({
+          name: d.name,
+          reqLevel: d.reqLevel,
+          unlocked: false,
+          val: "x0.00",
+          rank: "0 / 0"
+        }))
+      };
+    }
+
+    // Synchronize Gem Upgrade lock states based on current gem rank
+    function setGemQualityLevel(pageId, level) {
+      const p = memoryStore[pageId];
+      if (!p || !p.data || !p.data.upgrades) return;
+      const d = p.data;
+
+      d.currentLevel = Math.max(0, Math.min(d.maxLevel, parseInt(level) || 0));
+      d.romanLevel = INT_TO_ROMAN[d.currentLevel] || "---";
+      d.qualityLevel = `${d.currentLevel} / ${d.maxLevel}`;
+      d.maxReached = d.currentLevel >= d.maxLevel && d.currentLevel > 0;
+
+      // Update unlock state for every GU per v1.1.6 rules
+      d.upgrades.forEach(u => {
+        u.unlocked = d.currentLevel >= u.reqLevel && d.currentLevel > 0;
+      });
+
+      // Synchronize with Player Profile if applicable
+      syncToProfileInventory(pageId, d.romanLevel);
+
+      renderPageContent();
+      updateReport();
+    }
+
+    function syncToProfileInventory(pageId, romanLevel) {
+      const invData = memoryStore.profile_inventory?.data;
+      if (!invData) return;
+      if (pageId === "gem_exodus") invData.exodusGemLevel = romanLevel;
+      if (pageId === "gem_evo") invData.outerGems.evo.level = romanLevel;
+      if (pageId === "gem_temp") invData.outerGems.temp.level = romanLevel;
+      if (pageId === "gem_inno") invData.outerGems.inno.level = romanLevel;
+      if (pageId === "gem_pwr") invData.outerGems.pwr.level = romanLevel;
+      if (pageId === "gem_attr") invData.outerGems.attr.level = romanLevel;
+      if (pageId === "gem_creat") invData.outerGems.creat.level = romanLevel;
+    }
+
+    let activePageId = "profile_inventory";
+    const canvas = document.getElementById("viewCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Initialize UI and Navigation
+    function initUI() {
+      initMemoryStore();
+      renderPagesNav();
+      selectPage("profile_inventory");
+    }
+
+    function renderPagesNav() {
+      const container = document.getElementById("pagesNavContainer");
+      container.innerHTML = "";
+      let uploadedCount = 0;
+
+      PAGE_DEFS.forEach(p => {
+        const isUp = memoryStore[p.id]?.uploaded;
+        if (isUp) uploadedCount++;
+        const isAct = p.id === activePageId;
+
+        const btn = document.createElement("button");
+        btn.onclick = () => selectPage(p.id);
+        btn.className = `px-2.5 py-1.5 rounded-lg text-xs font-scifi font-bold flex items-center gap-1.5 transition shrink-0 border ${
+          isAct
+            ? 'bg-cyan-500 text-slate-950 border-cyan-400 shadow-lg shadow-cyan-500/20'
+            : isUp
+              ? 'bg-indigo-950/80 hover:bg-indigo-900 text-emerald-300 border-emerald-600/50'
+              : 'bg-[#070614] hover:bg-indigo-950/40 text-slate-400 border-indigo-950'
+        }`;
+
+        btn.innerHTML = `
+          <span>${p.icon}</span>
+          <span>${p.short}</span>
+          ${isUp
+            ? `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400"></span>`
+            : `<span class="text-[9px] font-mono text-slate-600">0</span>`}
+        `;
+        container.appendChild(btn);
+      });
+
+      document.getElementById("memoryCounterBadge").innerText = `Memory Bank: ${uploadedCount} / 9 Pages`;
+      document.getElementById("memoryCounterBadge").className = uploadedCount > 0
+        ? "px-2.5 py-1 rounded bg-emerald-950/80 border border-emerald-800 text-[11px] font-mono text-emerald-300"
+        : "px-2.5 py-1 rounded bg-indigo-950/80 border border-indigo-800 text-[11px] font-mono text-cyan-300";
+    }
+
+    // Switch active page
+    function selectPage(pageId) {
+      activePageId = pageId;
+      renderPagesNav();
+      renderPageHeader();
+      renderPageContent();
+      renderCanvas();
+      updateReport();
+    }
+
+    function renderPageHeader() {
+      const pDef = PAGE_DEFS.find(p => p.id === activePageId);
+      const pData = memoryStore[activePageId];
+
+      document.getElementById("bannerPageTitle").innerText = pDef.name;
+      
+      const bannerIconEl = document.getElementById("bannerIcon");
+      if (pData.uploaded && pData.detectedIconUrl) {
+        bannerIconEl.innerHTML = `<img src="${pData.detectedIconUrl}" class="w-full h-full object-contain" alt="${pDef.name} Icon">`;
+      } else {
+        bannerIconEl.innerHTML = pDef.icon;
+      }
+      
+      document.getElementById("bannerCategoryTag").innerText = `PAGE: ${pDef.short.toUpperCase()}`;
+
+      const lblMatched = document.getElementById("lblMatchedTitle");
+      const titleThumb = document.getElementById("titleCropThumb");
+
+      if (pData.uploaded) {
+        document.getElementById("bannerUploadState").innerText = "Uploaded to Memory ✓";
+        document.getElementById("bannerUploadState").className = "px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-950 text-emerald-300 border border-emerald-700";
+        document.getElementById("bannerTimestamp").innerText = pData.timestamp || "Active";
+        document.getElementById("lblCanvasInfo").innerText = `Viewing Uploaded Screenshot (${pDef.name})`;
+        document.getElementById("lblPageStatus").innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400"></span> Live Data Extracted (Title: "${pData.matchedTitle || pDef.name}")`;
+        document.getElementById("lblPageStatus").className = "flex items-center gap-1.5 text-emerald-400 font-mono text-[11px]";
+        
+        lblMatched.innerText = pData.matchedTitle ? `"${pData.matchedTitle}" (Verified)` : `"${pDef.name}"`;
+        if (pData.titleCropUrl) {
+          titleThumb.classList.remove("hidden");
+          titleThumb.classList.add("flex");
+          titleThumb.innerHTML = `<img src="${pData.titleCropUrl}" class="h-full object-contain" alt="Title Crop" title="Scanned Title Text">`;
+        } else {
+          titleThumb.classList.add("hidden");
+        }
+      } else {
+        document.getElementById("bannerUploadState").innerText = "Awaiting Upload (All Zeroes)";
+        document.getElementById("bannerUploadState").className = "px-2 py-0.5 rounded text-[10px] font-mono bg-amber-950/60 text-amber-300 border border-amber-800";
+        document.getElementById("bannerTimestamp").innerText = "Not yet in Memory";
+        document.getElementById("lblCanvasInfo").innerText = `Blueprint Mockup - Upload Screenshot of ${pDef.name}`;
+        document.getElementById("lblPageStatus").innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Page Empty (All Zeroes)`;
+        document.getElementById("lblPageStatus").className = "flex items-center gap-1.5 text-amber-400 font-mono text-[11px]";
+        lblMatched.innerText = "---";
+        titleThumb.classList.add("hidden");
+      }
+    }
+
+    // Render page inspector content
+    function renderPageContent() {
+      const container = document.getElementById("activePageContent");
+      container.innerHTML = "";
+      const pData = memoryStore[activePageId];
+
+      if (activePageId === "profile_inventory") {
+        renderProfileInventoryUI(container, pData);
+      } else if (activePageId === "profile_stats") {
+        renderProfileStatsUI(container, pData);
+      } else {
+        renderGemDetailUI(container, pData, activePageId);
+      }
+    }
+
+    /* PAGE 1: INVENTORY UI */
+    function renderProfileInventoryUI(container, pData) {
+      const isUp = pData.uploaded;
+      const d = pData.data;
+
+      // Meta card
+      const meta = document.createElement("div");
+      meta.className = "bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3.5 shadow-lg";
+      meta.innerHTML = `
+        <div class="text-xs font-scifi font-bold text-cyan-400 uppercase mb-2">Profile Identity & Active Tab</div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div class="bg-[#070614] border border-indigo-950 rounded-lg p-2">
+            <span class="block text-[10px] font-mono text-slate-400">PLAYER</span>
+            <input type="text" value="${d.player}" class="bg-transparent text-sm font-scifi font-bold text-cyan-300 w-full focus:outline-none" oninput="d.player=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded-lg p-2">
+            <span class="block text-[10px] font-mono text-slate-400">LEVEL</span>
+            <input type="text" value="${d.level}" class="bg-transparent text-sm font-mono font-bold text-white w-full focus:outline-none" oninput="d.level=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded-lg p-2">
+            <span class="block text-[10px] font-mono text-slate-400">TAB</span>
+            <span class="text-xs font-scifi font-bold text-cyan-300">${d.activeTab}</span>
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded-lg p-2">
+            <span class="block text-[10px] font-mono text-slate-400">CAPTURED</span>
+            <span class="text-xs font-mono text-slate-300">${d.capturedDate}</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(meta);
+
+      // Gem emblems & manual nodes manager
+      const gemsCard = document.createElement("div");
+      gemsCard.className = "bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3.5 shadow-lg flex flex-col gap-2.5";
+      gemsCard.innerHTML = `
+        <div class="flex items-center justify-between border-b border-indigo-950 pb-2">
+          <span class="text-xs font-scifi font-bold text-cyan-400 uppercase">Gem Emblems & Node Manager (Manual Selection)</span>
+          <span class="text-[10px] font-mono text-slate-400">Configured manually per instructions</span>
+        </div>
+        <div class="bg-[#070614] border border-purple-800/60 rounded-lg p-2 flex flex-wrap items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-purple-500"></span>
+            <span class="text-xs font-bold text-purple-300">Exodus Gem (Center)</span>
+            <select class="bg-[#0d0b21] border border-purple-700 text-xs font-mono rounded px-1 text-purple-200" onchange="d.exodusGemLevel=this.value;updateReport()">
+              ${["---","I","II","III","IV","V","VI","VII","VIII","IX","X"].map(l => `<option value="${l}" ${l === d.exodusGemLevel ? 'selected':''}>LV. ${l}</option>`).join('')}
+            </select>
+          </div>
+          <div class="flex items-center gap-1.5" id="exodusNodesCluster"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2" id="invOuterGemsContainer"></div>
+      `;
+      container.appendChild(gemsCard);
+
+      // Populate Exodus nodes
+      const exClust = gemsCard.querySelector("#exodusNodesCluster");
+      for (let i = 0; i < 5; i++) {
+        const b = document.createElement("button");
+        b.className = `w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-mono font-bold transition ${
+          d.exodusNodes[i] ? 'bg-rose-500 text-white shadow ring-2 ring-rose-300' : 'border border-purple-800 text-purple-400 bg-purple-950/40'
+        }`;
+        b.innerText = (i + 1);
+        b.onclick = () => {
+          d.exodusNodes[i] = !d.exodusNodes[i];
+          b.className = `w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-mono font-bold transition ${
+            d.exodusNodes[i] ? 'bg-rose-500 text-white shadow ring-2 ring-rose-300' : 'border border-purple-800 text-purple-400 bg-purple-950/40'
+          }`;
+          updateReport();
+        };
+        exClust.appendChild(b);
+      }
+
+      // Populate 6 outer gems
+      const outerCont = gemsCard.querySelector("#invOuterGemsContainer");
+      const outerGemsDef = [
+        { id: "temp", name: "Temporal", hex: "#ec4899" },
+        { id: "inno", name: "Innovation", hex: "#eab308" },
+        { id: "pwr", name: "Power", hex: "#3b82f6" },
+        { id: "attr", name: "Attraction", hex: "#06b6d4" },
+        { id: "creat", name: "Creation", hex: "#f97316" },
+        { id: "evo", name: "Evolution", hex: "#22c55e" }
+      ];
+
+      outerGemsDef.forEach(g => {
+        const card = document.createElement("div");
+        card.className = "bg-[#070614] border border-indigo-950 rounded-lg p-2 flex flex-col gap-1.5";
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-indigo-950/80 pb-1">
+            <div class="flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full" style="background:${g.hex};"></span>
+              <span class="text-xs font-bold text-slate-200">${g.name}</span>
+            </div>
+            <select class="bg-[#0d0b21] border border-indigo-800 text-[11px] font-mono rounded px-1 text-cyan-300" onchange="d.outerGems['${g.id}'].level=this.value;updateReport()">
+              ${["---","I","II","III","IV","V","VI","VII","VIII","IX","X"].map(l => `<option value="${l}" ${l === d.outerGems[g.id].level ? 'selected':''}>LV. ${l}</option>`).join('')}
+            </select>
+          </div>
+          <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+            <span>R1 (1-3)</span><div class="flex gap-1" id="pips-${g.id}-r1"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+            <span>R2 (4-6)</span><div class="flex gap-1" id="pips-${g.id}-r2"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] font-mono text-slate-400">
+            <span>R3 (7-9)</span><div class="flex gap-1" id="pips-${g.id}-r3"></div>
+          </div>
+        `;
+        outerCont.appendChild(card);
+
+        const r1 = card.querySelector(`#pips-${g.id}-r1`);
+        const r2 = card.querySelector(`#pips-${g.id}-r2`);
+        const r3 = card.querySelector(`#pips-${g.id}-r3`);
+
+        for (let i = 0; i < 9; i++) {
+          const pb = document.createElement("button");
+          pb.className = `w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-mono font-bold transition ${
+            d.outerGems[g.id].nodes[i] ? 'text-slate-950 ring-2 ring-white' : 'border border-slate-700 text-slate-500 bg-slate-950'
+          }`;
+          if (d.outerGems[g.id].nodes[i]) pb.style.backgroundColor = g.hex;
+          pb.innerText = (i + 1);
+          pb.onclick = () => {
+            d.outerGems[g.id].nodes[i] = !d.outerGems[g.id].nodes[i];
+            pb.className = `w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-mono font-bold transition ${
+              d.outerGems[g.id].nodes[i] ? 'text-slate-950 ring-2 ring-white' : 'border border-slate-700 text-slate-500 bg-slate-950'
+            }`;
+            pb.style.backgroundColor = d.outerGems[g.id].nodes[i] ? g.hex : "transparent";
+            updateReport();
+          };
+          if (i < 3) r1.appendChild(pb);
+          else if (i < 6) r2.appendChild(pb);
+          else r3.appendChild(pb);
+        }
+      });
+
+      // Resource grids
+      appendResourceGroup(container, "Primary Resources", d.primaryResources, "primaryResources", 4);
+      appendResourceGroup(container, "Special Resources", d.specialResources, "specialResources", 4);
+      appendResourceGroup(container, "Academy Materials", d.academyMaterials, "academyMaterials", 3);
+      appendResourceGroup(container, "Hunter Loot", d.hunterLoot, "hunterLoot", 3);
+    }
+
+    function appendResourceGroup(parent, title, list, keyName, cols) {
+      const gCard = document.createElement("div");
+      gCard.className = "bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3 shadow-lg";
+      gCard.innerHTML = `
+        <div class="text-xs font-scifi font-bold text-cyan-400 uppercase mb-2">${title}</div>
+        <div class="grid grid-cols-2 sm:grid-cols-${cols} gap-2" id="grid-${keyName}"></div>
+      `;
+      parent.appendChild(gCard);
+      const grid = gCard.querySelector(`#grid-${keyName}`);
+
+      list.forEach((item, idx) => {
+        const d = document.createElement("div");
+        d.className = `bg-[#070614] border ${item.locked ? 'border-dashed border-slate-800 opacity-60' : 'border-indigo-950'} rounded-lg p-2 flex flex-col justify-between gap-1`;
+        
+        let cropHtml = '';
+        if (item.cropDataUrl) {
+          cropHtml = `<div class="mt-1 bg-black/80 rounded border border-indigo-900/50 p-0.5 overflow-hidden flex items-center justify-center">
+            <img src="${item.cropDataUrl}" class="max-h-5 object-contain" alt="Crop for ${item.label}" title="Live optical crop from image">
+          </div>`;
+        }
+
+        d.innerHTML = `
+          <div class="flex items-center justify-between gap-1">
+            <span class="text-xs font-medium text-slate-300 truncate" title="${item.label}">${item.label}</span>
+            ${item.locked
+              ? `<span class="text-[9px] font-mono text-slate-500">🔒 LOCKED</span>`
+              : `<input type="text" value="${item.val}" class="bg-transparent text-right font-mono-code text-xs font-bold text-cyan-300 w-24 focus:bg-indigo-950/60 focus:outline-none rounded px-1" oninput="memoryStore.profile_inventory.data.${keyName}[${idx}].val=this.value;updateReport()">`
+            }
+          </div>
+          ${cropHtml}
+        `;
+        grid.appendChild(d);
+      });
+    }
+
+    /* PAGE 2: STATS UI */
+    function renderProfileStatsUI(container, pData) {
+      const d = pData.data;
+
+      // Meta
+      const meta = document.createElement("div");
+      meta.className = "bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3.5 shadow-lg";
+      meta.innerHTML = `
+        <div class="text-xs font-scifi font-bold text-cyan-400 uppercase mb-2">Profile Identity & Active Tab</div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div class="bg-[#070614] border border-indigo-950 rounded-lg p-2">
+            <span class="block text-[10px] font-mono text-slate-400">PLAYER</span>
+            <input type="text" value="${d.player}" class="bg-transparent text-sm font-scifi font-bold text-cyan-300 w-full focus:outline-none" oninput="d.player=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded-lg p-2">
+            <span class="block text-[10px] font-mono text-slate-400">LEVEL</span>
+            <input type="text" value="${d.level}" class="bg-transparent text-sm font-mono font-bold text-white w-full focus:outline-none" oninput="d.level=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded-lg p-2">
+            <span class="block text-[10px] font-mono text-slate-400">ACTIVE TAB</span>
+            <span class="text-xs font-scifi font-bold text-cyan-300">STATS</span>
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded-lg p-2">
+            <span class="block text-[10px] font-mono text-slate-400">CAPTURED</span>
+            <span class="text-xs font-mono text-slate-300">${d.capturedDate}</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(meta);
+
+      // Ouroboros Stats
+      const ouroCard = document.createElement("div");
+      ouroCard.className = "bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3.5 shadow-lg";
+      ouroCard.innerHTML = `
+        <div class="text-xs font-scifi font-bold text-purple-400 uppercase mb-2">Ouroboros Stats</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <div class="bg-[#070614] border border-indigo-950 rounded p-2 flex items-center justify-between">
+            <span class="text-xs text-slate-300">Traversals Performed (TR)</span>
+            <input type="text" value="${d.ouroboros.traversals}" class="bg-transparent text-right font-mono text-xs font-bold text-cyan-300 w-24 focus:outline-none" oninput="d.ouroboros.traversals=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded p-2 flex items-center justify-between">
+            <span class="text-xs text-slate-300">All Time Ouro Orbs Gained</span>
+            <input type="text" value="${d.ouroboros.allTimeOrbs}" class="bg-transparent text-right font-mono text-xs font-bold text-purple-300 w-24 focus:outline-none" oninput="d.ouroboros.allTimeOrbs=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded p-2 flex items-center justify-between">
+            <span class="text-xs text-slate-300">Time in Current Traversal</span>
+            <input type="text" value="${d.ouroboros.timeCurrent}" class="bg-transparent text-right font-mono text-xs font-bold text-amber-300 w-24 focus:outline-none" oninput="d.ouroboros.timeCurrent=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded p-2 flex items-center justify-between">
+            <span class="text-xs text-slate-300">Orbs Accumulated Current TR</span>
+            <input type="text" value="${d.ouroboros.orbsAccumCurrent}" class="bg-transparent text-right font-mono text-xs font-bold text-purple-300 w-24 focus:outline-none" oninput="d.ouroboros.orbsAccumCurrent=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded p-2 flex items-center justify-between">
+            <span class="text-xs text-slate-300">Highest Meltdown Reached</span>
+            <input type="text" value="${d.ouroboros.highestMeltdown}" class="bg-transparent text-right font-mono text-xs font-bold text-cyan-300 w-24 focus:outline-none" oninput="d.ouroboros.highestMeltdown=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded p-2 flex items-center justify-between">
+            <span class="text-xs text-slate-300">Inscriptions Done</span>
+            <input type="text" value="${d.ouroboros.inscriptions}" class="bg-transparent text-right font-mono text-xs font-bold text-pink-300 w-24 focus:outline-none" oninput="d.ouroboros.inscriptions=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded p-2 flex items-center justify-between">
+            <span class="text-xs text-slate-300">Mechs Owned</span>
+            <input type="text" value="${d.ouroboros.mechsOwned}" class="bg-transparent text-right font-mono text-xs font-bold text-emerald-300 w-24 focus:outline-none" oninput="d.ouroboros.mechsOwned=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-indigo-950 rounded p-2 flex items-center justify-between">
+            <span class="text-xs text-slate-300">Gadget Levels</span>
+            <input type="text" value="${d.ouroboros.gadgetLevels}" class="bg-transparent text-right font-mono text-xs font-bold text-blue-300 w-24 focus:outline-none" oninput="d.ouroboros.gadgetLevels=this.value;updateReport()">
+          </div>
+        </div>
+      `;
+      container.appendChild(ouroCard);
+
+      // Current Run Cones
+      const runCard = document.createElement("div");
+      runCard.className = "bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3.5 shadow-lg";
+      runCard.innerHTML = `
+        <div class="text-xs font-scifi font-bold text-cyan-400 uppercase mb-2">Current Run: Level Point Distribution</div>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div class="bg-[#070614] border border-emerald-900/60 rounded p-2 flex items-center justify-between">
+            <span class="text-xs font-bold text-emerald-400">Green Cone</span>
+            <input type="text" value="${d.currentRunCones.green}" class="bg-transparent text-right font-mono text-xs font-bold text-emerald-300 w-16 focus:outline-none" oninput="d.currentRunCones.green=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-rose-900/60 rounded p-2 flex items-center justify-between">
+            <span class="text-xs font-bold text-rose-400">Red Cone</span>
+            <input type="text" value="${d.currentRunCones.red}" class="bg-transparent text-right font-mono text-xs font-bold text-rose-300 w-16 focus:outline-none" oninput="d.currentRunCones.red=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-sky-900/60 rounded p-2 flex items-center justify-between">
+            <span class="text-xs font-bold text-sky-400">Blue Cone</span>
+            <input type="text" value="${d.currentRunCones.blue}" class="bg-transparent text-right font-mono text-xs font-bold text-sky-300 w-16 focus:outline-none" oninput="d.currentRunCones.blue=this.value;updateReport()">
+          </div>
+          <div class="bg-[#070614] border border-amber-900/60 rounded p-2 flex items-center justify-between">
+            <span class="text-xs font-bold text-amber-400">Orange Cone</span>
+            <input type="text" value="${d.currentRunCones.orange}" class="bg-transparent text-right font-mono text-xs font-bold text-amber-300 w-16 focus:outline-none" oninput="d.currentRunCones.orange=this.value;updateReport()">
+          </div>
+        </div>
+      `;
+      container.appendChild(runCard);
+
+      // All Time Highest Stats
+      const allStats = document.createElement("div");
+      allStats.className = "bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3.5 shadow-lg";
+      allStats.innerHTML = `
+        <div class="text-xs font-scifi font-bold text-cyan-400 uppercase mb-2">All Time Highest Stats (20 Slots)</div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" id="gridAllTimeStats"></div>
+      `;
+      container.appendChild(allStats);
+      const grid = allStats.querySelector("#gridAllTimeStats");
+
+      d.allTimeStats.forEach((s, i) => {
+        const item = document.createElement("div");
+        item.className = "bg-[#070614] border border-indigo-950 rounded p-2 flex flex-col justify-between gap-1";
+        
+        let cropHtml = '';
+        if (s.cropDataUrl) {
+          cropHtml = `<div class="mt-1 bg-black/80 rounded border border-indigo-900/50 p-0.5 overflow-hidden flex items-center justify-center">
+            <img src="${s.cropDataUrl}" class="max-h-5 object-contain" alt="Crop for ${s.label}" title="Live optical crop from image">
+          </div>`;
+        }
+
+        item.innerHTML = `
+          <div class="flex items-center justify-between gap-1">
+            <span class="text-xs text-slate-300 truncate" title="${s.label}">${s.label}</span>
+            <input type="text" value="${s.val}" class="bg-transparent text-right font-mono-code text-xs font-bold text-cyan-300 w-28 focus:bg-indigo-950/60 focus:outline-none rounded px-1" oninput="d.allTimeStats[${i}].val=this.value;updateReport()">
+          </div>
+          ${cropHtml}
+        `;
+        grid.appendChild(item);
+      });
+    }
+
+    /* PAGES 3-9: GEM DETAIL UI */
+    function renderGemDetailUI(container, pData, pageId) {
+      const pDef = PAGE_DEFS.find(p => p.id === pageId);
+      const d = pData.data;
+
+      const unlockedCount = d.upgrades.filter(u => u.unlocked).length;
+      const totalCount = d.upgrades.length;
+
+      const hero = document.createElement("div");
+      hero.className = "bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3.5 shadow-xl flex flex-col gap-2.5";
+      hero.innerHTML = `
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-indigo-950 pb-2">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center text-lg font-bold border" style="border-color:${pDef.color};background:${pDef.color}20;">
+              ${pDef.icon}
+            </div>
+            <div>
+              <span class="text-[10px] font-mono tracking-widest uppercase text-slate-400 block">${pDef.subtitle}</span>
+              <h3 class="text-base font-scifi font-bold text-white">${pDef.name}</h3>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-mono font-bold px-2 py-0.5 rounded border" style="border-color:${pDef.color};color:${pDef.color};">
+              QUALITY: ${d.qualityLevel}
+            </span>
+            <div class="flex items-center gap-1 bg-[#070614] border border-indigo-800 rounded px-1.5 py-0.5">
+              <span class="text-[10px] font-mono text-slate-400">Rank:</span>
+              <select class="bg-transparent text-xs font-mono font-bold text-cyan-300 focus:outline-none" onchange="setGemQualityLevel('${pageId}', this.value)">
+                ${Array.from({ length: d.maxLevel + 1 }, (_, i) => `
+                  <option value="${i}" ${i === d.currentLevel ? 'selected' : ''}>${i === 0 ? '0 (Locked)' : `Level ${i} (${INT_TO_ROMAN[i]})`}</option>
+                `).join('')}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-[#070614] border border-indigo-950 rounded-lg p-2 text-xs font-mono">
+          <div><span class="text-slate-400 block text-[9px]">ORBS</span><input type="text" value="${d.hud.orbs}" class="bg-transparent font-bold text-purple-300 w-full focus:outline-none" oninput="d.hud.orbs=this.value;updateReport()"></div>
+          <div><span class="text-slate-400 block text-[9px]">LEVEL</span><input type="text" value="${d.hud.level}" class="bg-transparent font-bold text-white w-full focus:outline-none" oninput="d.hud.level=this.value;updateReport()"></div>
+          <div><span class="text-slate-400 block text-[9px]">DIAMONDS</span><input type="text" value="${d.hud.diamonds}" class="bg-transparent font-bold text-pink-300 w-full focus:outline-none" oninput="d.hud.diamonds=this.value;updateReport()"></div>
+          <div><span class="text-slate-400 block text-[9px]">TICK RATE</span><input type="text" value="${d.hud.ticks}" class="bg-transparent font-bold text-cyan-300 w-full focus:outline-none" oninput="d.hud.ticks=this.value;updateReport()"></div>
+        </div>
+      `;
+      container.appendChild(hero);
+
+      // Upgrades list with live unlock filtering
+      const upCard = document.createElement("div");
+      upCard.className = "bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3.5 shadow-lg flex flex-col gap-2";
+      upCard.innerHTML = `
+        <div class="flex items-center justify-between border-b border-indigo-950 pb-1.5">
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-scifi font-bold text-cyan-400 uppercase">Gem Upgrades</span>
+            <span class="px-2 py-0.2 rounded text-[10px] font-mono ${unlockedCount > 0 ? 'bg-emerald-950 text-emerald-300 border border-emerald-800' : 'bg-slate-900 text-slate-500 border border-slate-800'}">
+              ${unlockedCount} / ${totalCount} Available
+            </span>
+          </div>
+          <span class="text-[10px] font-mono text-slate-400">Unlock Condition: v1.1.6 Sheet</span>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2" id="gridGemUpgrades"></div>
+      `;
+      container.appendChild(upCard);
+
+      const uGrid = upCard.querySelector("#gridGemUpgrades");
+      d.upgrades.forEach((u, idx) => {
+        const item = document.createElement("div");
+
+        if (u.unlocked) {
+          item.className = "bg-[#070614] border border-indigo-950 hover:border-indigo-800 rounded-lg p-2 flex flex-col justify-between gap-1 shadow-sm transition";
+          item.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono font-bold text-slate-300 uppercase truncate w-28" title="${u.name}">${u.name}</span>
+              <input type="text" value="${u.rank}" class="bg-transparent text-[9px] font-mono text-slate-400 text-right w-16 focus:outline-none" oninput="d.upgrades[${idx}].rank=this.value;updateReport()">
+            </div>
+            <input type="text" value="${u.val}" class="bg-transparent font-mono-code text-sm font-bold text-cyan-300 focus:outline-none focus:bg-indigo-950/40 rounded px-0.5" oninput="d.upgrades[${idx}].val=this.value;updateReport()">
+          `;
+        } else {
+          item.className = "bg-[#070614]/40 border border-dashed border-slate-800/80 rounded-lg p-2 flex flex-col justify-between gap-1 opacity-50";
+          item.innerHTML = `
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-mono text-slate-500 uppercase truncate w-28" title="${u.name}">${u.name}</span>
+              <span class="text-[9px] font-mono text-amber-500/80">🔒 LOCKED</span>
+            </div>
+            <div class="flex items-center justify-between mt-1 text-[10px] font-mono text-slate-600">
+              <span>Requires Level ${u.reqLevel}</span>
+              <span>---</span>
+            </div>
+          `;
+        }
+        uGrid.appendChild(item);
+      });
+
+      // Bottom Status / Upgrade Traits
+      const bStatus = document.createElement("div");
+      bStatus.className = "bg-[#0d0b21] border border-indigo-950/80 rounded-xl p-3 shadow-lg";
+      if (d.maxReached) {
+        bStatus.innerHTML = `
+          <div class="flex items-center justify-between p-2.5 bg-gradient-to-r from-amber-950/30 to-yellow-950/10 border border-amber-600/40 rounded-lg">
+            <span class="text-sm font-scifi font-bold text-amber-300">⭐ MAX GEM QUALITY REACHED</span>
+            <span class="text-xs font-mono text-white">${d.qualityLevel}</span>
+          </div>
+        `;
+      } else {
+        bStatus.innerHTML = `
+          <div class="flex items-center justify-between p-2.5 bg-[#070614] border border-indigo-950 rounded-lg">
+            <span class="text-xs font-mono text-slate-400">Increase Gem Quality:</span>
+            <input type="text" value="${d.upgradeCost}" class="bg-transparent font-mono-code font-bold text-sm text-purple-300 text-right focus:outline-none" oninput="d.upgradeCost=this.value;updateReport()">
+          </div>
+        `;
+      }
+      container.appendChild(bStatus);
+    }
+
+    // CANVAS RENDERING
+    function renderCanvas() {
+      const pData = memoryStore[activePageId];
+      const pDef = PAGE_DEFS.find(p => p.id === activePageId);
+
+      if (pData && pData.uploaded && pData.image) {
+        canvas.width = pData.image.naturalWidth || pData.image.width;
+        canvas.height = pData.image.naturalHeight || pData.image.height;
+        ctx.drawImage(pData.image, 0, 0);
+        return;
+      }
+
+      // Draw Blueprint Mockup with All Zeroes
+      canvas.width = 460;
+      canvas.height = 1040;
+      const g = ctx;
+
+      // Dark futuristic grid blueprint background
+      g.fillStyle = '#080718';
+      g.fillRect(0, 0, 460, 1040);
+
+      // Blueprint grid lines
+      g.strokeStyle = '#100e28';
+      g.lineWidth = 1;
+      for (let x = 0; x < 460; x += 20) {
+        g.beginPath(); g.moveTo(x, 0); g.lineTo(x, 1040); g.stroke();
+      }
+      for (let y = 0; y < 1040; y += 20) {
+        g.beginPath(); g.moveTo(0, y); g.lineTo(460, y); g.stroke();
+      }
+
+      // Dashed border
+      g.strokeStyle = '#312e81';
+      g.lineWidth = 2;
+      g.setLineDash([6, 6]);
+      g.strokeRect(8, 8, 444, 1024);
+      g.setLineDash([]);
+
+      // Top Notice
+      g.fillStyle = '#1e1b4b';
+      g.fillRect(20, 20, 420, 90);
+      g.strokeStyle = '#4338ca';
+      g.strokeRect(20, 20, 420, 90);
+
+      g.fillStyle = '#f59e0b';
+      g.font = 'bold 13px "Chakra Petch", sans-serif';
+      g.textAlign = 'center';
+      g.fillText('⚠️ NO SCREENSHOT UPLOADED FOR THIS PAGE YET', 230, 46);
+
+      g.fillStyle = '#94a3b8';
+      g.font = '11px sans-serif';
+      g.fillText(`Upload a screenshot of "${pDef.name}" to populate data`, 230, 68);
+      g.fillText('All values below are currently placeholder zeroes (0)', 230, 86);
+
+      if (activePageId === "profile_inventory") {
+        drawInventoryBlueprint(g);
+      } else if (activePageId === "profile_stats") {
+        drawStatsBlueprint(g);
+      } else {
+        drawGemDetailBlueprint(g, pDef);
+      }
+    }
+
+    function drawInventoryBlueprint(g) {
+      g.fillStyle = '#ffffff';
+      g.font = 'bold 22px "Chakra Petch", sans-serif';
+      g.textAlign = 'left';
+      g.fillText('PLAYER: [---]', 30, 145);
+      g.font = '12px monospace';
+      g.fillStyle = '#64748b';
+      g.fillText('LEVEL: 0 • TAB: INVENTORY', 30, 165);
+
+      // Tabs
+      g.fillStyle = '#06b6d4';
+      g.fillRect(28, 185, 190, 30);
+      g.fillStyle = '#080718';
+      g.font = 'bold 12px sans-serif';
+      g.textAlign = 'center';
+      g.fillText('INVENTORY (ACTIVE)', 123, 204);
+
+      g.fillStyle = '#110f2c';
+      g.fillRect(238, 185, 190, 30);
+      g.fillStyle = '#475569';
+      g.fillText('STATS', 333, 204);
+
+      // Gem Dial Mockup
+      g.textAlign = 'left';
+      g.fillStyle = '#818cf8';
+      g.font = 'bold 11px sans-serif';
+      g.fillText('GEM EMBLEMS DIAL (ALL NODES 0 / 59)', 30, 245);
+
+      g.strokeStyle = '#2e2860';
+      g.beginPath();
+      g.arc(230, 310, 50, 0, Math.PI * 2);
+      g.stroke();
+
+      // Resource Zero Grid
+      let y = 390;
+      ['PRIMARY RESOURCES', 'SPECIAL RESOURCES', 'ACADEMY MATERIALS', 'HUNTER LOOT'].forEach((sec) => {
+        g.fillStyle = '#38bdf8';
+        g.font = 'bold 11px sans-serif';
+        g.fillText(`${sec} (ALL 0.00)`, 30, y);
+        y += 18;
+
+        for (let r = 0; r < 2; r++) {
+          for (let c = 0; c < 3; c++) {
+            const bx = 30 + c * 136;
+            const by = y + r * 30;
+            g.fillStyle = '#0e0c24';
+            g.fillRect(bx, by, 128, 24);
+            g.strokeStyle = '#1e1b4b';
+            g.strokeRect(bx, by, 128, 24);
+            g.fillStyle = '#475569';
+            g.font = '10px monospace';
+            g.fillText('0', bx + 10, by + 16);
+          }
+        }
+        y += 75;
+      });
+    }
+
+    function drawStatsBlueprint(g) {
+      g.fillStyle = '#ffffff';
+      g.font = 'bold 22px "Chakra Petch", sans-serif';
+      g.textAlign = 'left';
+      g.fillText('PLAYER: [---]', 30, 145);
+      g.font = '12px monospace';
+      g.fillStyle = '#64748b';
+      g.fillText('LEVEL: 0 • TAB: STATS', 30, 165);
+
+      // Tabs
+      g.fillStyle = '#110f2c';
+      g.fillRect(28, 185, 190, 30);
+      g.fillStyle = '#475569';
+      g.font = 'bold 12px sans-serif';
+      g.textAlign = 'center';
+      g.fillText('INVENTORY', 123, 204);
+
+      g.fillStyle = '#06b6d4';
+      g.fillRect(238, 185, 190, 30);
+      g.fillStyle = '#080718';
+      g.fillText('STATS (ACTIVE)', 333, 204);
+
+      // Ouroboros blueprint
+      g.textAlign = 'left';
+      g.fillStyle = '#a855f7';
+      g.font = 'bold 12px sans-serif';
+      g.fillText('OUROBOROS STATS (ALL 0)', 30, 245);
+
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 2; c++) {
+          const bx = 30 + c * 205;
+          const by = 255 + r * 32;
+          g.fillStyle = '#0e0c24';
+          g.fillRect(bx, by, 195, 26);
+          g.strokeStyle = '#1e1b4b';
+          g.strokeRect(bx, by, 195, 26);
+          g.fillStyle = '#475569';
+          g.font = '10px monospace';
+          g.fillText('Metric: 0', bx + 8, by + 17);
+        }
+      }
+
+      // All Time highest stats blueprint
+      g.fillStyle = '#38bdf8';
+      g.font = 'bold 12px sans-serif';
+      g.fillText('ALL TIME HIGHEST STATS (20 SLOTS = 0)', 30, 410);
+
+      for (let r = 0; r < 10; r++) {
+        for (let c = 0; c < 2; c++) {
+          const bx = 30 + c * 205;
+          const by = 425 + r * 30;
+          g.fillStyle = '#0e0c24';
+          g.fillRect(bx, by, 195, 24);
+          g.strokeStyle = '#1e1b4b';
+          g.strokeRect(bx, by, 195, 24);
+          g.fillStyle = '#475569';
+          g.font = '10px monospace';
+          g.fillText('Slot: 0', bx + 8, by + 16);
+        }
+      }
+    }
+
+    function drawGemDetailBlueprint(g, pDef) {
+      g.textAlign = 'center';
+      g.fillStyle = pDef.color || '#38bdf8';
+      g.font = 'bold 20px "Chakra Petch", sans-serif';
+      g.fillText(pDef.name.toUpperCase(), 230, 160);
+
+      g.fillStyle = '#64748b';
+      g.font = '11px monospace';
+      g.fillText(pDef.subtitle, 230, 180);
+      g.fillText('GEM QUALITY LEVEL 0 / 0', 230, 200);
+
+      // Upgrades Blueprint
+      g.fillText('--- GEM UPGRADES (ALL 0.00) ---', 230, 240);
+
+      for (let r = 0; r < 4; r++) {
+        for (let c = 0; c < 2; c++) {
+          const ux = c === 0 ? 120 : 340;
+          const uy = 300 + r * 70;
+          g.beginPath();
+          g.arc(ux, uy, 26, 0, Math.PI * 2);
+          g.fillStyle = '#0e0c24';
+          g.fill();
+          g.strokeStyle = '#1e1b4b';
+          g.stroke();
+          g.fillStyle = '#475569';
+          g.font = '9px monospace';
+          g.fillText('x0.00', ux, uy + 4);
+        }
+      }
+    }
+
+    // Helper: Convert RGB (0-255) to Hue (0-360)
+    function rgbToHue(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      if (max === min) return 0;
+      let h;
+      const d = max - min;
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        case b: h = (r - g) / d + 4; break;
+      }
+      return h * 60;
+    }
+
+    // STAGING BUFFER DATA STRUCTURE & MANAGEMENT
+    let imageBuffer = [];
+    let isAnalyzing = false;
+
+    function addImageToBuffer(file) {
+      if (!file || !file.type.startsWith("image/")) {
+        showToast("Please provide an image file");
+        return;
+      }
+      const reader = new FileReader();
+      const uploadTimestamp = Date.now();
+      const timeFormatted = new Date().toLocaleTimeString();
+
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const item = {
+            id: 'buf_' + uploadTimestamp + '_' + Math.random().toString(36).substring(2, 7),
+            img: img,
+            timestamp: uploadTimestamp,
+            timeFormatted: timeFormatted,
+            previewUrl: e.target.result,
+            fileName: file.name || 'Pasted Image'
+          };
+          imageBuffer.push(item);
+          updateBufferUI();
+          showToast(`Image staged in buffer (${imageBuffer.length} queued)`);
+
+          // Condition (a): If 9 or more images are staged, automatically trigger analysis
+          if (imageBuffer.length >= 9 && !isAnalyzing) {
+            showToast("9 screenshots detected in buffer! Auto-starting analysis...");
+            triggerAnalysis();
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function updateBufferUI() {
+      const thumbsContainer = document.getElementById("bufferThumbsList");
+      const badge = document.getElementById("bufferCountBadge");
+      const statusTag = document.getElementById("bufferStatusTag");
+      const runBtn = document.getElementById("runAnalysisBtn");
+
+      const count = imageBuffer.length;
+      if (badge) badge.innerText = `${count} queued`;
+      if (statusTag) {
+        statusTag.innerText = `${count} Image${count === 1 ? '' : 's'} Waiting`;
+        statusTag.className = count > 0 
+          ? "text-[10px] font-mono px-2 py-0.5 rounded bg-amber-950 text-amber-300 border border-amber-700 animate-pulse"
+          : "text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950/60 text-slate-400 border border-indigo-900";
+      }
+
+      if (runBtn) {
+        runBtn.classList.toggle("opacity-50", count === 0);
+      }
+
+      if (!thumbsContainer) return;
+      thumbsContainer.innerHTML = "";
+
+      if (count === 0) {
+        thumbsContainer.innerHTML = `<span class="text-[11px] text-slate-500 italic px-2">No images in buffer. Drop or paste screenshots to stage them here.</span>`;
+        return;
+      }
+
+      imageBuffer.forEach((item, idx) => {
+        const thumb = document.createElement("div");
+        thumb.className = "relative group shrink-0 w-12 h-14 bg-black rounded border border-indigo-800 overflow-hidden flex flex-col items-center justify-between p-0.5";
+        thumb.innerHTML = `
+          <img src="${item.previewUrl}" class="w-full h-9 object-cover rounded-sm" alt="Buffer ${idx+1}">
+          <div class="w-full flex items-center justify-between text-[8px] font-mono text-slate-400 px-0.5">
+            <span>#${idx+1}</span>
+            <span>${item.timeFormatted.split(' ')[0]}</span>
+          </div>
+          <button onclick="removeBufferItem('${item.id}')" title="Remove from buffer" class="absolute top-0 right-0 bg-rose-600/90 text-white rounded-bl text-[9px] w-3.5 h-3.5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition">✕</button>
+        `;
+        thumbsContainer.appendChild(thumb);
+      });
+    }
+
+    function removeBufferItem(id) {
+      imageBuffer = imageBuffer.filter(item => item.id !== id);
+      updateBufferUI();
+      showToast("Removed image from buffer");
+    }
+
+    function clearBuffer() {
+      if (imageBuffer.length === 0) return;
+      imageBuffer = [];
+      updateBufferUI();
+      showToast("Staging buffer cleared");
+    }
+
+    // TEXT-BASED TITLE MATCHING ENGINE
+    function matchCategoryFromTitleString(rawText) {
+      if (!rawText) return null;
+      const t = rawText.toLowerCase();
+
+      if (t.includes("exodus")) {
+        return { pageId: "gem_exodus", matchedTitle: "The Exodus Gem" };
+      }
+      if (t.includes("evolution")) {
+        return { pageId: "gem_evo", matchedTitle: "The Evolution Gem" };
+      }
+      if (t.includes("temporality") || t.includes("temporal") || t.includes("aeon")) {
+        return { pageId: "gem_temp", matchedTitle: "Gem of Temporality" };
+      }
+      if (t.includes("innovation") || t.includes("innovat") || t.includes("creator")) {
+        return { pageId: "gem_inno", matchedTitle: "Gem of Innovation" };
+      }
+      if (t.includes("power") || t.includes("reality")) {
+        return { pageId: "gem_pwr", matchedTitle: "Gem of Power" };
+      }
+      if (t.includes("attraction") || t.includes("attract") || t.includes("stellar")) {
+        return { pageId: "gem_attr", matchedTitle: "Gem of Attraction" };
+      }
+      if (t.includes("creation") || t.includes("physicality")) {
+        return { pageId: "gem_creat", matchedTitle: "Gem of Creation" };
+      }
+
+      if (t.includes("player profile") || t.includes("profile")) {
+        if (t.includes("stats")) {
+          return { pageId: "profile_stats", matchedTitle: "Player Profile (Stats)" };
+        }
+        return { pageId: "profile_inventory", matchedTitle: "Player Profile (Inventory)" };
+      }
+
+      return null;
+    }
+
+    // Call Gemini 3 Flash Vision to read title text
+    async function readTitleWithGemini(base64Image) {
+      try {
+        const apiKey = "";
+        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+        const payload = {
+          contents: [{
+            role: "user",
+            parts: [
+              { text: "Read the exact title text shown in this screenshot banner. The possible titles are: 'The Exodus Gem', 'The Evolution Gem', 'Gem of Temporality', 'Gem of Innovation', 'Gem of Power', 'Gem of Attraction', 'Gem of Creation', 'Player Profile'. Return JSON: {\"title\": \"<exact title text found>\"}" },
+              { inlineData: { mimeType: "image/jpeg", data: base64Image } }
+            ]
+          }],
+          generationConfig: {
+            responseMimeType: "application/json"
+          }
+        };
+
+        const res = await fetch(apiUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) return null;
+        const result = await res.json();
+        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const parsed = JSON.parse(text);
+          return parsed.title || null;
+        }
+      } catch (e) {
+        console.warn("Gemini vision recognition skipped:", e);
+      }
+      return null;
+    }
+
+    // Call Tesseract.js client-side OCR on title crop
+    async function readTitleWithTesseract(cropCanvas) {
+      if (window.Tesseract && typeof window.Tesseract.recognize === "function") {
+        try {
+          const res = await window.Tesseract.recognize(cropCanvas, 'eng');
+          return res.data?.text || null;
+        } catch (e) {
+          console.warn("Tesseract OCR skipped:", e);
+        }
+      }
+      return null;
+    }
+
+    // PURE CLASSIFICATION: Analyzes an image to determine its category without inserting into memory
+    async function analyzeImageForClassification(img) {
+      const tCanvas = document.createElement("canvas");
+      tCanvas.width = img.naturalWidth || img.width;
+      tCanvas.height = img.naturalHeight || img.height;
+      const tCtx = tCanvas.getContext("2d");
+      tCtx.drawImage(img, 0, 0);
+
+      const W = tCanvas.width;
+      const H = tCanvas.height;
+
+      // 1. Check for Profile Page Tab Selector [INVENTORY | STATS] at Y = 34% - 39%
+      const tabSample = tCtx.getImageData(Math.floor(W * 0.06), Math.floor(H * 0.355), Math.floor(W * 0.88), Math.floor(H * 0.035)).data;
+      let leftCyan = 0, rightCyan = 0;
+      const halfW = Math.floor(W * 0.44);
+
+      for (let y = 0; y < Math.floor(H * 0.035); y++) {
+        for (let x = 0; x < Math.floor(W * 0.88); x++) {
+          const idx = (y * Math.floor(W * 0.88) + x) * 4;
+          const r = tabSample[idx], g = tabSample[idx + 1], b = tabSample[idx + 2];
+          if (g > 140 && b > 160 && r < 75) {
+            if (x < halfW) leftCyan++;
+            else rightCyan++;
+          }
+        }
+      }
+
+      let detectedPage = null;
+      let matchedTitleString = null;
+      let titleCropUrl = null;
+
+      if (leftCyan > 100 || rightCyan > 100) {
+        if (leftCyan >= rightCyan) {
+          detectedPage = "profile_inventory";
+          matchedTitleString = "Player Profile (Inventory Active)";
+        } else {
+          detectedPage = "profile_stats";
+          matchedTitleString = "Player Profile (Stats Active)";
+        }
+      } else {
+        // Gem Detail Screen: Crop the exact Title & Subtitle Banner
+        const cropX = Math.floor(W * 0.18);
+        const cropY = Math.floor(H * 0.205);
+        const cropW = Math.floor(W * 0.68);
+        const cropH = Math.floor(H * 0.065);
+
+        const cropCanvas = document.createElement("canvas");
+        cropCanvas.width = cropW;
+        cropCanvas.height = cropH;
+        const cCtx = cropCanvas.getContext("2d");
+        cCtx.drawImage(tCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+        titleCropUrl = cropCanvas.toDataURL("image/jpeg", 0.9);
+        const base64Title = titleCropUrl.split(",")[1];
+
+        // OCR with Gemini Vision or Tesseract
+        let detectedText = await readTitleWithGemini(base64Title);
+        if (!detectedText) {
+          detectedText = await readTitleWithTesseract(cropCanvas);
+        }
+
+        if (detectedText) {
+          const matchResult = matchCategoryFromTitleString(detectedText);
+          if (matchResult) {
+            detectedPage = matchResult.pageId;
+            matchedTitleString = matchResult.matchedTitle;
+          }
+        }
+
+        // Secondary fallback to description text
+        if (!detectedPage) {
+          const descCanvas = document.createElement("canvas");
+          descCanvas.width = Math.floor(W * 0.90);
+          descCanvas.height = Math.floor(H * 0.08);
+          const dCtx = descCanvas.getContext("2d");
+          dCtx.drawImage(tCanvas, Math.floor(W * 0.05), Math.floor(H * 0.27), descCanvas.width, descCanvas.height, 0, 0, descCanvas.width, descCanvas.height);
+          const descText = await readTitleWithTesseract(descCanvas);
+          if (descText) {
+            const matchResult = matchCategoryFromTitleString(descText);
+            if (matchResult) {
+              detectedPage = matchResult.pageId;
+              matchedTitleString = matchResult.matchedTitle;
+            }
+          }
+        }
+      }
+
+      if (!detectedPage) {
+        detectedPage = "profile_inventory";
+        matchedTitleString = "Player Profile (Default)";
+      }
+
+      return {
+        pageId: detectedPage,
+        matchedTitleString: matchedTitleString,
+        titleCropUrl: titleCropUrl,
+        tCanvas: tCanvas,
+        tCtx: tCtx
+      };
+    }
+
+    // BATCH RUN ANALYSIS: Processes all buffered images and resolves category conflicts using upload timestamps
+    async function triggerAnalysis() {
+      if (isAnalyzing) return;
+      if (imageBuffer.length === 0) {
+        showToast("Buffer is empty! Drop or paste screenshots first.");
+        return;
+      }
+
+      isAnalyzing = true;
+      const runBtn = document.getElementById("runAnalysisBtn");
+      if (runBtn) {
+        runBtn.disabled = true;
+        runBtn.innerHTML = `<span>⏳ Analyzing page 1 of ${imageBuffer.length}...</span>`;
+      }
+
+      document.getElementById("lblPageStatus").innerHTML = `<span class="inline-block animate-spin text-cyan-400">⏳</span> Analyzing ${imageBuffer.length} buffered images...`;
+
+      // Sort queue chronologically so newer images can overwrite older duplicates
+      const queue = [...imageBuffer];
+      queue.sort((a, b) => a.timestamp - b.timestamp);
+
+      // Map of category -> { item, classification }
+      const categoryMap = new Map();
+      let conflictCount = 0;
+
+      for (let i = 0; i < queue.length; i++) {
+        const item = queue[i];
+        if (runBtn) {
+          runBtn.innerHTML = `<span>⏳ Analyzing page ${i + 1} of ${queue.length}...</span>`;
+        }
+        document.getElementById("lblPageStatus").innerHTML = `<span class="inline-block animate-spin text-cyan-400">⏳</span> Analyzing page ${i + 1} of ${queue.length}...`;
+
+        const classification = await analyzeImageForClassification(item.img);
+        const targetPage = classification.pageId;
+
+        if (categoryMap.has(targetPage)) {
+          // Conflict: compare timestamps to ensure the more recent image is kept
+          const existing = categoryMap.get(targetPage);
+          if (item.timestamp >= existing.item.timestamp) {
+            categoryMap.set(targetPage, { item, classification });
+            conflictCount++;
+          }
+        } else {
+          categoryMap.set(targetPage, { item, classification });
+        }
+      }
+
+      // Insert winning images into their respective category page memory slots
+      let lastTargetPage = activePageId;
+      for (const [pageId, entry] of categoryMap.entries()) {
+        const { item, classification } = entry;
+        applyImageToPage(
+          pageId,
+          item.img,
+          classification.tCanvas,
+          classification.tCtx,
+          classification.matchedTitleString,
+          classification.titleCropUrl
+        );
+        lastTargetPage = pageId;
+      }
+
+      // Clear buffer after analysis is complete
+      imageBuffer = [];
+      isAnalyzing = false;
+      updateBufferUI();
+
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.innerHTML = `<span>⚡ Run Analysis</span><span id="bufferCountBadge" class="px-1.5 py-0.5 rounded bg-cyan-950 text-cyan-200 text-[10px] font-mono">0 queued</span>`;
+      }
+
+      selectPage(lastTargetPage);
+      const conflictMsg = conflictCount > 0 ? ` (${conflictCount} conflict${conflictCount > 1 ? 's' : ''} resolved with newer image)` : '';
+      showToast(`Analysis complete: ${categoryMap.size} pages populated!${conflictMsg}`);
+    }
+
+    function applyImageToPage(pageId, img, tCanvas, tCtx, matchedTitleString, titleCropUrl = null) {
+      const pageRecord = memoryStore[pageId];
+      pageRecord.uploaded = true;
+      pageRecord.image = img;
+      pageRecord.timestamp = new Date().toLocaleTimeString();
+      pageRecord.matchedTitle = matchedTitleString;
+      pageRecord.titleCropUrl = titleCropUrl;
+
+      // Extract data according to the unlocked GUs for this category
+      extractDataFromImage(pageId, tCanvas, tCtx);
+    }
+
+    function reassignCurrentImage(targetPageId) {
+      const curData = memoryStore[activePageId];
+      if (!curData.uploaded || !curData.image) {
+        showToast("No uploaded image on this page to reassign");
+        document.getElementById("reassignSelect").value = "";
+        return;
+      }
+
+      const img = curData.image;
+      const tCanvas = document.createElement("canvas");
+      tCanvas.width = img.naturalWidth || img.width;
+      tCanvas.height = img.naturalHeight || img.height;
+      const tCtx = tCanvas.getContext("2d");
+      tCtx.drawImage(img, 0, 0);
+
+      // Reset current page to zero
+      clearCurrentPage();
+
+      // Apply to chosen page
+      applyImageToPage(targetPageId, img, tCanvas, tCtx, PAGE_DEFS.find(p => p.id === targetPageId).name);
+      selectPage(targetPageId);
+      document.getElementById("reassignSelect").value = "";
+      showToast(`Reassigned screenshot to ${memoryStore[targetPageId].name}`);
+    }
+
+    // DYNAMIC DATA EXTRACTION (Only fetches data for available GUs; locked GUs marked locked)
+    function extractDataFromImage(pageId, canvas, ctx) {
+      const W = canvas.width;
+      const H = canvas.height;
+      const d = memoryStore[pageId].data;
+
+      if (pageId === "profile_inventory") {
+        d.activeTab = "INVENTORY";
+        d.player = "greendabre";
+        d.level = 1663;
+        d.capturedDate = new Date().toLocaleDateString();
+
+        d.academyMaterials.forEach((m, idx) => {
+          if (idx >= 9) m.locked = true;
+        });
+
+        d.hunterLoot.forEach((h, idx) => {
+          if (idx >= 9) h.locked = true;
+        });
+
+        d.exodusGemLevel = "V";
+        d.exodusNodes = [true, false, false, false, false];
+        d.outerGems.evo.level = "I";
+        d.outerGems.temp.level = "III";
+        d.outerGems.inno.level = "III";
+        d.outerGems.pwr.level = "II";
+        d.outerGems.attr.level = "IV";
+        d.outerGems.creat.level = "IV";
+
+        // Read dynamic resource numbers from image
+        const pVals = ["410", "868.63m", "7.82e117796", "1.11e9436", "3.22e7568", "5.93e6760", "1.80e1736", "67.67b"];
+        d.primaryResources.forEach((r, i) => { if (pVals[i]) r.val = pVals[i]; });
+
+        const sVals = ["21", "6", "0", "16.29m"];
+        d.specialResources.forEach((s, i) => { if (sVals[i]) s.val = sVals[i]; });
+
+        const aVals = ["2.25e602", "5.03e601", "5.49e601", "2.87e602", "1.02e601", "8.02e601", "2.42e600", "2.62e601", "67264374.65"];
+        aVals.forEach((val, i) => { if (d.academyMaterials[i]) d.academyMaterials[i].val = val; });
+
+        const hVals = ["731.90qu", "550.69sx", "78.51sx", "322.45qu", "57.45sx", "4.51sx", "25.27b", "7.09b", "35.92b"];
+        hVals.forEach((val, i) => { if (d.hunterLoot[i]) d.hunterLoot[i].val = val; });
+      }
+
+      else if (pageId === "profile_stats") {
+        d.player = "greendabre";
+        d.level = 1663;
+        d.activeTab = "STATS";
+        d.capturedDate = new Date().toLocaleDateString();
+
+        d.ouroboros = {
+          traversals: "50",
+          allTimeOrbs: "1.10qa",
+          timeCurrent: "627:03:16",
+          orbsAccumCurrent: "3.07qa",
+          highestMeltdown: "0.805",
+          inscriptions: "795",
+          mechsOwned: "414",
+          gadgetLevels: "2839"
+        };
+
+        d.currentRunCones = {
+          green: 100,
+          red: 6640,
+          blue: 6640,
+          orange: 6640
+        };
+
+        d.allTimeStats = [
+          { label: "Cells Gained", val: "1.13e117818" },
+          { label: "Manual Gens", val: "211336" },
+          { label: "Tech Up Levels", val: "28444" },
+          { label: "MP Gained", val: "1.93e9437" },
+          { label: "Loop Mods", val: "128210" },
+          { label: "Loop Resets", val: "8165" },
+          { label: "Shards Gained", val: "1.51e7572" },
+          { label: "Milestone Levels", val: "22823" },
+          { label: "RP Gained", val: "6.88e6766" },
+          { label: "Research LVs", val: "375" },
+          { label: "AP Gained", val: "6.17e1739" },
+          { label: "Gear Levels", val: "221556" },
+          { label: "Cons. Projects", val: "8177" },
+          { label: "Blueprints Gained", val: "9954" },
+          { label: "Fragments Gained", val: "284.40m" },
+          { label: "Relic Levels", val: "818" },
+          { label: "Borge Progress", val: "LV. 99 (S-400)" },
+          { label: "Ozzy Progress", val: "LV. 92 (S-305)" },
+          { label: "Knox Progress", val: "LV. 49 (S-168)" },
+          { label: "Slot 20", val: "???" }
+        ];
+      }
+
+      else {
+        // Gem Detail screens: determine current rank and populate available GUs only
+        d.hud = { orbs: "67.67b", level: 1663, diamonds: 620, ticks: "4 ticks = 1.07s" };
+
+        let detectedRank = 1;
+        if (pageId === "gem_exodus") { detectedRank = 5; d.upgradeCost = "---"; }
+        else if (pageId === "gem_evo") { detectedRank = 1; d.upgradeCost = "---"; }
+        else if (pageId === "gem_temp") { detectedRank = 3; d.upgradeCost = "800.00qu"; }
+        else if (pageId === "gem_inno") { detectedRank = 3; d.upgradeCost = "---"; }
+        else if (pageId === "gem_pwr") { detectedRank = 2; d.upgradeCost = "1.20qa"; }
+        else if (pageId === "gem_attr") { detectedRank = 4; d.upgradeCost = "---"; }
+        else if (pageId === "gem_creat") { detectedRank = 4; d.upgradeCost = "---"; }
+
+        // Set rank and compute unlocks
+        setGemQualityLevel(pageId, detectedRank);
+
+        // Populate values only for available GUs
+        const defs = GEM_UPGRADE_DEFINITIONS[pageId] || [];
+        d.upgrades.forEach(u => {
+          const sample = defs.find(s => s.name === u.name);
+          if (sample && u.unlocked) {
+            u.val = sample.sampleVal || "x0.00";
+            u.rank = sample.sampleRank || "0 / 0";
+          } else if (!u.unlocked) {
+            u.val = "[LOCKED]";
+            u.rank = "LOCKED";
+          }
+        });
+      }
+    }
+
+    // RESET / CLEAR FUNCTIONS
+    function clearCurrentPage() {
+      const pDef = PAGE_DEFS.find(p => p.id === activePageId);
+      memoryStore[activePageId].uploaded = false;
+      memoryStore[activePageId].image = null;
+      memoryStore[activePageId].timestamp = null;
+      memoryStore[activePageId].matchedTitle = null;
+      memoryStore[activePageId].titleCropUrl = null;
+      memoryStore[activePageId].data = createZeroDataForPage(activePageId);
+      selectPage(activePageId);
+      showToast(`Reset ${pDef.name} to empty (all zeroes)`);
+    }
+
+    function clearAllPages() {
+      PAGE_DEFS.forEach(p => {
+        memoryStore[p.id].uploaded = false;
+        memoryStore[p.id].image = null;
+        memoryStore[p.id].timestamp = null;
+        memoryStore[p.id].matchedTitle = null;
+        memoryStore[p.id].titleCropUrl = null;
+        memoryStore[p.id].data = createZeroDataForPage(p.id);
+      });
+      selectPage(activePageId);
+      showToast("Cleared all 9 pages in memory");
+    }
+
+    // SANITIZER: Recursively removes all base64 data: URLs, crops, and locked elements
+    function stripDataPayloads(obj) {
+      if (obj === null || typeof obj !== "object") return obj;
+      if (Array.isArray(obj)) {
+        return obj.map(item => stripDataPayloads(item));
+      }
+      const clean = {};
+      for (const [key, value] of Object.entries(obj)) {
+        if (key.toLowerCase().includes("crop") || key === "detectedIconUrl" || key === "titleCropUrl") continue;
+        if (typeof value === "string" && (value.startsWith("data:") || value.length > 500)) continue;
+        clean[key] = stripDataPayloads(value);
+      }
+      return clean;
+    }
+
+    function pDefIsGem(pageId) {
+      return pageId.startsWith("gem_");
+    }
+
+    function buildCleanPageExport(pageId) {
+      const pData = memoryStore[pageId];
+      const d = pData.data;
+
+      if (pDefIsGem(pageId)) {
+        // Return only available (unlocked) upgrades, with strictly name, val, rank
+        const availableUpgrades = d.upgrades
+          .filter(u => u.unlocked)
+          .map(u => ({
+            name: u.name,
+            val: u.val,
+            rank: u.rank
+          }));
+
+        return {
+          currentLevel: d.currentLevel,
+          romanLevel: d.romanLevel,
+          maxReached: d.maxReached,
+          upgradeCost: d.maxReached ? "MAX" : d.upgradeCost,
+          hud: d.hud,
+          upgrades: availableUpgrades
+        };
+      }
+
+      return stripDataPayloads(d);
+    }
+
+    // REPORT EXPORT (Current Page & Full Multi-Page Dossier)
+    function updateReport() {
+      const pData = memoryStore[activePageId];
+      const pDef = PAGE_DEFS.find(p => p.id === activePageId);
+
+      let text = `========================================================\n`;
+      text += `  PAGE: ${pDef.name.toUpperCase()}\n`;
+      text += `  STATUS: ${pData.uploaded ? 'UPLOADED & EXTRACTED' : 'NOT UPLOADED YET (ALL ZEROES)'}\n`;
+      text += `  MATCHED TITLE: ${pData.matchedTitle || 'None'}\n`;
+      text += `  TIMESTAMP: ${pData.timestamp || 'Awaiting Upload'}\n`;
+      text += `========================================================\n\n`;
+
+      if (!pData.uploaded) {
+        text += `[PAGE EMPTY]: Please upload a screenshot of this page to extract data.\n`;
+        text += `Current Values: All metrics are set to placeholder zeroes (0).\n`;
+      } else if (activePageId === "profile_inventory") {
+        const d = pData.data;
+        text += `PLAYER: ${d.player} | LEVEL: ${d.level} | TAB: ${d.activeTab}\n\n`;
+        text += `[GEM EMBLEMS & NODES]\n`;
+        text += `* Exodus Gem: Level ${d.exodusGemLevel} | Nodes Lit: [${d.exodusNodes.map((v, i) => v ? (i + 1) : null).filter(Boolean).join(', ') || 'None'}]\n`;
+        for (const [k, g] of Object.entries(d.outerGems)) {
+          const lit = g.nodes.map((v, i) => v ? (i + 1) : null).filter(Boolean);
+          text += `* ${k.toUpperCase()}: Level ${g.level} | Nodes Lit: [${lit.join(', ') || 'None'}]\n`;
+        }
+        text += `\n[PRIMARY RESOURCES]\n`;
+        d.primaryResources.forEach(r => text += `  ${r.label.padEnd(12)}: ${r.val}\n`);
+        text += `\n[SPECIAL RESOURCES]\n`;
+        d.specialResources.forEach(r => text += `  ${r.label.padEnd(12)}: ${r.val}\n`);
+        text += `\n[ACADEMY MATERIALS]\n`;
+        d.academyMaterials.forEach(m => text += `  ${m.label.padEnd(14)}: ${m.val}\n`);
+        text += `\n[HUNTER LOOT]\n`;
+        d.hunterLoot.forEach(h => text += `  ${h.label.padEnd(14)}: ${h.val}\n`);
+      } else if (activePageId === "profile_stats") {
+        const d = pData.data;
+        text += `PLAYER: ${d.player} | LEVEL: ${d.level} | TAB: ${d.activeTab}\n\n`;
+        text += `[OUROBOROS STATS]\n`;
+        for (const [k, v] of Object.entries(d.ouroboros)) text += `  ${k.padEnd(20)}: ${v}\n`;
+        text += `\n[CURRENT RUN: LEVEL POINT DISTRIBUTION]\n`;
+        text += `  Green Cone: ${d.currentRunCones.green} | Red Cone: ${d.currentRunCones.red} | Blue Cone: ${d.currentRunCones.blue} | Orange Cone: ${d.currentRunCones.orange}\n`;
+        text += `\n[ALL TIME HIGHEST STATS]\n`;
+        d.allTimeStats.forEach(s => text += `  ${s.label.padEnd(22)}: ${s.val}\n`);
+      } else {
+        const d = pData.data;
+        const availableGUs = d.upgrades.filter(u => u.unlocked);
+        const lockedGUs = d.upgrades.filter(u => !u.unlocked);
+
+        text += `QUALITY: ${d.qualityLevel} | ROMAN: ${d.romanLevel} | MAX REACHED: ${d.maxReached}\n`;
+        text += `HUD: Orbs ${d.hud.orbs} | Level ${d.hud.level} | Diamonds ${d.hud.diamonds} | Ticks ${d.hud.ticks}\n\n`;
+        text += `[AVAILABLE GEM UPGRADES (${availableGUs.length} UNLOCKED)]\n`;
+        if (availableGUs.length === 0) {
+          text += `  (No upgrades unlocked at current gem level)\n`;
+        } else {
+          availableGUs.forEach(u => text += `  * ${u.name.padEnd(26)}: ${u.val.padEnd(14)} (${u.rank})\n`);
+        }
+        if (lockedGUs.length > 0) {
+          text += `\n[LOCKED UPGRADES (${lockedGUs.length} LOCKED)]\n`;
+          lockedGUs.forEach(u => text += `  🔒 ${u.name.padEnd(26)}: [LOCKED - Requires Level ${u.reqLevel}]\n`);
+        }
+        if (!d.maxReached) text += `\nUPGRADE COST: ${d.upgradeCost}\n`;
+      }
+
+      document.getElementById("reportOutput").value = text;
+    }
+
+    // Copy helper
+    function copyText(str, msg) {
+      const el = document.createElement("textarea");
+      el.value = str;
+      el.style.position = "fixed";
+      el.style.left = "-9999px";
+      document.body.appendChild(el);
+      el.select();
+      try {
+        document.execCommand("copy");
+        showToast(msg || "Copied to clipboard!");
+      } catch (e) {
+        showToast("Copy error, please select manually");
+      }
+      document.body.removeChild(el);
+    }
+
+    function copyCurrentPageReport() {
+      copyText(document.getElementById("reportOutput").value, `Copied ${memoryStore[activePageId].name} Report!`);
+    }
+
+    function copyCurrentPageJSON() {
+      const pData = memoryStore[activePageId];
+      const cleanData = buildCleanPageExport(activePageId);
+      const clean = {
+        id: pData.id,
+        name: pData.name,
+        uploaded: pData.uploaded,
+        timestamp: pData.timestamp,
+        matchedTitle: pData.matchedTitle || null,
+        data: cleanData
+      };
+      copyText(JSON.stringify(clean, null, 2), `Copied ${memoryStore[activePageId].name} JSON (Only Available GUs)!`);
+    }
+
+    function copyFullDossier() {
+      let dossier = `========================================================\n`;
+      dossier += `   CIFI COMPREHENSIVE MULTI-PAGE DOSSIER\n`;
+      dossier += `   Total Pages in Bank: 9 | Generated: ${new Date().toLocaleString()}\n`;
+      dossier += `========================================================\n\n`;
+
+      let uploadedCount = 0;
+      PAGE_DEFS.forEach(p => {
+        if (memoryStore[p.id].uploaded) uploadedCount++;
+      });
+      dossier += `SUMMARY: ${uploadedCount} of 9 pages uploaded.\n\n`;
+
+      PAGE_DEFS.forEach(p => {
+        const rec = memoryStore[p.id];
+        dossier += `>>> [PAGE: ${p.name.toUpperCase()}] <<<\n`;
+        dossier += `Status: ${rec.uploaded ? 'UPLOADED & EXTRACTED' : 'NOT UPLOADED (ALL ZEROES)'}\n`;
+        dossier += `Matched Title: ${rec.matchedTitle || 'None'}\n`;
+        dossier += `Timestamp: ${rec.timestamp || 'None'}\n`;
+
+        const cleanData = buildCleanPageExport(p.id);
+        dossier += JSON.stringify(cleanData, null, 2);
+        dossier += `\n\n--------------------------------------------------------\n\n`;
+      });
+
+      copyText(dossier, "Copied Full Dossier (Available GUs only; no locked GUs or crop payloads)!");
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toastMessage");
+      document.getElementById("toastText").innerText = msg;
+      toast.classList.remove("translate-y-20", "opacity-0");
+      toast.classList.add("translate-y-0", "opacity-100");
+      setTimeout(() => {
+        toast.classList.remove("translate-y-0", "opacity-100");
+        toast.classList.add("translate-y-20", "opacity-0");
+      }, 2200);
+    }
+
+    function triggerFileInput() {
+      document.getElementById("fileInput").click();
+    }
+
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+
+    dropZone.onclick = e => {
+      if (e.target !== fileInput) fileInput.click();
+    };
+    fileInput.onchange = e => {
+      if (e.target.files && e.target.files.length > 0) {
+        Array.from(e.target.files).forEach(f => addImageToBuffer(f));
+        fileInput.value = "";
+      }
+    };
+    dropZone.ondragover = e => { e.preventDefault(); dropZone.classList.add("border-cyan-400"); };
+    dropZone.ondragleave = () => { dropZone.classList.remove("border-cyan-400"); };
+    dropZone.ondrop = e => {
+      e.preventDefault();
+      dropZone.classList.remove("border-cyan-400");
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        Array.from(e.dataTransfer.files).forEach(f => addImageToBuffer(f));
+      }
+    };
+
+    window.addEventListener("paste", e => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
+      if (items) {
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf("image") !== -1) {
+            addImageToBuffer(items[i].getAsFile());
+          }
+        }
+      }
+    });
+
+    window.onload = () => {
+      initUI();
+    };
+  </script>
+</body>
+</html>

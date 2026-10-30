@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/overlayCircleRoot"
+    android:layout_width="56dp"
+    android:layout_height="56dp"
+    android:background="@drawable/overlay_circle_bg"
+    android:clickable="true"
+    android:elevation="12dp"
+    android:focusable="true">
+
+    <!-- Center Icon -->
+    <ImageView
+        android:id="@+id/ivOrbIcon"
+        android:layout_width="28dp"
+        android:layout_height="28dp"
+        android:layout_gravity="center"
+        android:contentDescription="Tap to Scan and Copy Dossier"
+        android:src="@drawable/ic_scan_orb" />
+
+    <!-- Center Captured Page Icon / Emoji (e.g. 🧬, 💡, 🎒, 📊) -->
+    <TextView
+        android:id="@+id/tvCapturedPageIcon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:includeFontPadding="false"
+        android:textSize="22sp"
+        android:visibility="gone" />
+
+    <!-- Progress / Scanning Spinner Indicator (Hidden by default) -->
+    <ProgressBar
+        android:id="@+id/pbScanning"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="center"
+        android:indeterminateTint="@color/cyan_400"
+        android:visibility="gone" />
+
+    <!-- Mini Counter Badge -->
+    <TextView
+        android:id="@+id/tvOrbCounterBadge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="2dp"
+        android:fontFamily="monospace"
+        android:shadowColor="#000000"
+        android:shadowDx="1"
+        android:shadowDy="1"
+        android:shadowRadius="2"
+        android:text="0/9"
+        android:textColor="@color/cyan_400"
+        android:textSize="9sp"
+        android:textStyle="bold" />
+
+</FrameLayout>

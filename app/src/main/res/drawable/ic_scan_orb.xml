@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="28dp"
+    android:height="28dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <!-- Outer Scanning Reticle Corners -->
+    <path
+        android:strokeColor="@color/cyan_400"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round"
+        android:pathData="M3,8V5a2,2 0 0,1 2,-2h3 M16,3h3a2,2 0 0,1 2,2v3 M21,16v3a2,2 0 0,1 -2,2h-3 M8,21H5a2,2 0 0,1 -2,-2v-3" />
+    <!-- Center Lightning Bolt -->
+    <path
+        android:fillColor="@color/amber_400"
+        android:pathData="M13,6 L7,13 L12,13 L11,18 L17,11 L12,11 Z" />
+</vector>
