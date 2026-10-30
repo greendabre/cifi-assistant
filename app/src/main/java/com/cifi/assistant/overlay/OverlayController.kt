@@ -31,6 +31,7 @@ import com.cifi.assistant.repository.DossierRepository
 import com.cifi.assistant.service.CaptureService
 import com.cifi.assistant.util.ClipboardHelper
 import com.cifi.assistant.util.DebugScanStorage
+import com.cifi.assistant.util.NotificationHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,6 +74,27 @@ object OverlayController {
         updateBadgeText()
     }
 
+    private val stateListeners = mutableListOf<() -> Unit>()
+
+    fun addStateListener(listener: () -> Unit) {
+        if (!stateListeners.contains(listener)) {
+            stateListeners.add(listener)
+        }
+    }
+
+    fun removeStateListener(listener: () -> Unit) {
+        stateListeners.remove(listener)
+    }
+
+    private fun notifyStateChanged(context: Context? = null) {
+        context?.let {
+            NotificationHelper.updateNotification(it, isShowing())
+        }
+        mainHandler.post {
+            stateListeners.toList().forEach { it.invoke() }
+        }
+    }
+
     fun isShowing(): Boolean = overlayView?.visibility == View.VISIBLE
 
     @SuppressLint("ClickableViewAccessibility")
@@ -87,6 +109,7 @@ object OverlayController {
                 overlayView?.visibility = View.VISIBLE
                 updateBadgeText()
                 scheduleFadeIdle()
+                notifyStateChanged(context.applicationContext)
                 return@post
             }
 
@@ -181,6 +204,7 @@ object OverlayController {
                 DossierRepository.addListener(repoListener)
                 updateBadgeText()
                 scheduleFadeIdle()
+                notifyStateChanged(context.applicationContext)
                 Log.i(TAG, "Floating circle overlay initialized successfully")
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to inflate and attach circular overlay: ${e.message}", e)
@@ -350,16 +374,18 @@ object OverlayController {
         }
     }
 
-    fun hideOverlay() {
+    fun hideOverlay(context: Context? = null) {
         mainHandler.post {
             mainHandler.removeCallbacks(fadeIdleRunnable)
             mainHandler.removeCallbacks(resetIconRunnable)
             overlayView?.visibility = View.GONE
+            notifyStateChanged(context?.applicationContext ?: overlayView?.context?.applicationContext)
         }
     }
 
-    fun destroy() {
+    fun destroy(context: Context? = null) {
         mainHandler.post {
+            val appCtx = context?.applicationContext ?: overlayView?.context?.applicationContext
             mainHandler.removeCallbacks(fadeIdleRunnable)
             mainHandler.removeCallbacks(resetIconRunnable)
             if (isOverlayAttached && overlayView != null) {
@@ -372,6 +398,7 @@ object OverlayController {
             }
             overlayView = null
             isOverlayAttached = false
+            notifyStateChanged(appCtx)
         }
     }
 }

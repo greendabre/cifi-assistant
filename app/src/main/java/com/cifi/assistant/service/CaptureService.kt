@@ -16,9 +16,14 @@ import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.Log
 import android.view.WindowManager
+import android.widget.Toast
+import com.cifi.assistant.overlay.OverlayController
+import com.cifi.assistant.repository.DossierRepository
+import com.cifi.assistant.util.ClipboardHelper
 import com.cifi.assistant.util.DebugScanStorage
 import com.cifi.assistant.util.NotificationHelper
 import java.util.concurrent.atomic.AtomicBoolean
@@ -28,6 +33,8 @@ class CaptureService : Service() {
     companion object {
         private const val TAG = "CaptureService"
         const val ACTION_START = "com.cifi.assistant.action.START_CAPTURE_SERVICE"
+        const val ACTION_TOGGLE_OVERLAY = "com.cifi.assistant.action.TOGGLE_OVERLAY"
+        const val ACTION_COPY_DOSSIER = "com.cifi.assistant.action.COPY_DOSSIER"
         const val ACTION_STOP = "com.cifi.assistant.action.STOP_CAPTURE_SERVICE"
         const val EXTRA_RESULT_CODE = "extra_result_code"
         const val EXTRA_RESULT_DATA = "extra_result_data"
@@ -50,6 +57,7 @@ class CaptureService : Service() {
         }
 
         fun stop(context: Context) {
+            OverlayController.destroy(context)
             mediaProjection?.stop()
             mediaProjection = null
             isServiceRunning = false
@@ -153,12 +161,12 @@ class CaptureService : Service() {
         super.onCreate()
         DebugScanStorage.init(this)
         NotificationHelper.createNotificationChannel(this)
-        startInForeground()
         isServiceRunning = true
+        startInForeground(OverlayController.isShowing())
     }
 
-    private fun startInForeground() {
-        val notification = NotificationHelper.buildForegroundNotification(this)
+    private fun startInForeground(isOverlayVisible: Boolean) {
+        val notification = NotificationHelper.buildForegroundNotification(this, isOverlayVisible)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             startForeground(
                 NotificationHelper.NOTIFICATION_ID,
@@ -171,18 +179,36 @@ class CaptureService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP) {
-            CifiAccessibilityService.setPaused(this, true)
-            mediaProjection?.stop()
-            mediaProjection = null
-            isServiceRunning = false
-            stopForeground(STOP_FOREGROUND_REMOVE)
-            stopSelf()
-            return START_NOT_STICKY
+        when (intent?.action) {
+            ACTION_STOP -> {
+                OverlayController.destroy(this)
+                mediaProjection?.stop()
+                mediaProjection = null
+                isServiceRunning = false
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
+                return START_NOT_STICKY
+            }
+            ACTION_TOGGLE_OVERLAY -> {
+                if (!Settings.canDrawOverlays(this)) {
+                    Toast.makeText(this, "Grant Floating Overlay permission in CIFI Assistant first", Toast.LENGTH_SHORT).show()
+                } else if (OverlayController.isShowing()) {
+                    OverlayController.hideOverlay(this)
+                } else {
+                    OverlayController.showOverlay(this)
+                }
+                return START_STICKY
+            }
+            ACTION_COPY_DOSSIER -> {
+                val dossier = DossierRepository.compileDossierString()
+                ClipboardHelper.copyToClipboard(this, "CIFI Dossier", dossier, showToast = true)
+                return START_STICKY
+            }
         }
 
-        // 1. First ensure foreground service is actively running with mediaProjection type
-        startInForeground()
+        // 1. Ensure foreground service is actively running with mediaProjection type
+        isServiceRunning = true
+        startInForeground(OverlayController.isShowing())
 
         // 2. Extract projection token while inside the active foreground service (Android 14+ mandate)
         val resultCode = intent?.getIntExtra(EXTRA_RESULT_CODE, Activity.RESULT_CANCELED) ?: Activity.RESULT_CANCELED
@@ -207,6 +233,11 @@ class CaptureService : Service() {
 
                 mediaProjection = projection
                 Log.i(TAG, "MediaProjection successfully acquired within active Foreground Service")
+
+                // Automatically show the floating scanner orb once capture is authorized
+                if (Settings.canDrawOverlays(this)) {
+                    OverlayController.showOverlay(this)
+                }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to get MediaProjection in foreground service: ${e.message}", e)
             }
@@ -219,6 +250,7 @@ class CaptureService : Service() {
         isServiceRunning = false
         mediaProjection?.stop()
         mediaProjection = null
+        OverlayController.destroy(this)
         super.onDestroy()
     }
 

@@ -95,7 +95,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
-                        android:text="Enable the 3 permissions below to activate the floating overlay in CIFI."
+                        android:text="Grant the 2 permissions below to activate the floating scanner orb and notification controls."
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
@@ -112,7 +112,7 @@
                             android:layout_height="38dp"
                             android:layout_marginEnd="6dp"
                             android:layout_weight="1"
-                            android:text="Test Floating Overlay"
+                            android:text="Show Floating Orb"
                             android:textColor="@color/cyan_400"
                             android:textSize="11sp" />
 
@@ -179,7 +179,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Display overlay buttons over CIFI"
+                                android:text="Display floating scanner orb over CIFI"
                                 android:textColor="@color/text_muted"
                                 android:textSize="11sp" />
                         </LinearLayout>
@@ -202,7 +202,7 @@
                         android:layout_marginBottom="10dp"
                         android:background="@color/border_subtle" />
 
-                    <!-- 2. Accessibility Permission -->
+                    <!-- 2. Screen Capture Permission -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -218,7 +218,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="2. Accessibility Service"
+                                android:text="2. Screen Capture &amp; Notification Controls"
                                 android:textColor="@color/text_primary"
                                 android:textSize="13sp"
                                 android:textStyle="bold" />
@@ -226,54 +226,7 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Detects when CIFI is opened / closed"
-                                android:textColor="@color/text_muted"
-                                android:textSize="11sp" />
-                        </LinearLayout>
-
-                        <Button
-                            android:id="@+id/btnPermAccessibility"
-                            style="@style/Widget.Material3.Button.TonalButton"
-                            android:layout_width="wrap_content"
-                            android:layout_height="36dp"
-                            android:text="Enable"
-                            android:textColor="@color/cyan_400"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <!-- Divider -->
-                    <View
-                        android:layout_width="match_parent"
-                        android:layout_height="1dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_marginBottom="10dp"
-                        android:background="@color/border_subtle" />
-
-                    <!-- 3. Screen Capture Permission -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="3. Screen Capture Token"
-                                android:textColor="@color/text_primary"
-                                android:textSize="13sp"
-                                android:textStyle="bold" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Authorize single-frame OCR capture"
+                                android:text="Authorize single-frame OCR &amp; notification orb toggle"
                                 android:textColor="@color/text_muted"
                                 android:textSize="11sp" />
                         </LinearLayout>

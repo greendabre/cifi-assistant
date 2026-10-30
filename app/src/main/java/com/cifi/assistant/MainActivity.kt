@@ -6,7 +6,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.media.projection.MediaProjectionManager
 import android.net.Uri
 import android.os.Build
@@ -24,7 +23,6 @@ import com.cifi.assistant.model.PageId
 import com.cifi.assistant.overlay.OverlayController
 import com.cifi.assistant.repository.DossierRepository
 import com.cifi.assistant.service.CaptureService
-import com.cifi.assistant.service.CifiAccessibilityService
 import com.cifi.assistant.util.ClipboardHelper
 import com.cifi.assistant.util.DebugScanStorage
 import com.cifi.assistant.util.NotificationHelper
@@ -47,10 +45,9 @@ class MainActivity : AppCompatActivity() {
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK && result.data != null) {
             isProjectionAuthorized = true
-            CifiAccessibilityService.setPaused(this, false)
             // Android 14+ mandate: start foreground service first, then obtain projection token inside service
             CaptureService.start(this, result.resultCode, result.data!!)
-            Toast.makeText(this, "Screen capture authorized!", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Assistant active! Use the notification to hide/show the orb anytime.", Toast.LENGTH_SHORT).show()
         } else {
             isProjectionAuthorized = false
             Toast.makeText(this, "Screen capture permission declined", Toast.LENGTH_SHORT).show()
@@ -61,6 +58,12 @@ class MainActivity : AppCompatActivity() {
     private val repoListener = {
         runOnUiThread {
             updateBankDisplay()
+        }
+    }
+
+    private val overlayStateListener = {
+        runOnUiThread {
+            updateStatus()
         }
     }
 
@@ -81,16 +84,21 @@ class MainActivity : AppCompatActivity() {
 
         setupButtons()
         DossierRepository.addListener(repoListener)
+        OverlayController.addStateListener(overlayStateListener)
     }
 
     override fun onResume() {
         super.onResume()
+        if (!CaptureService.isServiceRunning && CaptureService.mediaProjection == null) {
+            isProjectionAuthorized = false
+        }
         updateStatus()
         updateBankDisplay()
     }
 
     override fun onDestroy() {
         DossierRepository.removeListener(repoListener)
+        OverlayController.removeStateListener(overlayStateListener)
         super.onDestroy()
     }
 
@@ -108,15 +116,12 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // 2. Accessibility Permission
-        binding.btnPermAccessibility.setOnClickListener {
-            val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
-            startActivity(intent)
-            Toast.makeText(this, "Enable 'CIFI Assistant' in Accessibility services", Toast.LENGTH_LONG).show()
-        }
-
-        // 3. Screen Capture Permission
+        // 2. Screen Capture Permission
         binding.btnPermMediaProjection.setOnClickListener {
+            if (!Settings.canDrawOverlays(this)) {
+                Toast.makeText(this, "Please grant Floating Overlay permission (Step 1) first", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
             if (CaptureService.mediaProjection == null) {
                 mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
             } else {
@@ -124,47 +129,37 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        // Test Floating Overlay Button
+        // Show / Hide Floating Orb Button
         binding.btnTestOverlay.setOnClickListener {
             if (!Settings.canDrawOverlays(this)) {
                 Toast.makeText(this, "Please grant Floating Overlay permission first", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
             if (OverlayController.isShowing()) {
-                OverlayController.hideOverlay()
-                binding.btnTestOverlay.text = "Test Floating Overlay"
+                OverlayController.hideOverlay(this)
             } else {
-                CifiAccessibilityService.setPaused(this, false)
                 OverlayController.showOverlay(this)
-                binding.btnTestOverlay.text = "Hide Floating Overlay"
             }
             updateStatus()
         }
 
         // Turn Off / Turn On Assistant Button
         binding.btnTurnOffAssistant.setOnClickListener {
-            val isCurrentlyPaused = CifiAccessibilityService.isPaused(this) &&
-                    CaptureService.mediaProjection == null &&
-                    !OverlayController.isShowing()
+            val isRunning = isProjectionAuthorized || CaptureService.mediaProjection != null || OverlayController.isShowing()
 
-            if (!isCurrentlyPaused) {
+            if (isRunning) {
                 // Turn off everything cleanly
-                CifiAccessibilityService.setPaused(this, true)
-                OverlayController.destroy()
                 CaptureService.stop(this)
                 isProjectionAuthorized = false
-                binding.btnTestOverlay.text = "Test Floating Overlay"
                 updateStatus()
                 Toast.makeText(this, "CIFI Assistant turned off", Toast.LENGTH_SHORT).show()
             } else {
-                // Turn back on
-                CifiAccessibilityService.setPaused(this, false)
-                if (CaptureService.mediaProjection == null) {
-                    mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
-                } else {
-                    updateStatus()
-                    Toast.makeText(this, "CIFI Assistant turned on", Toast.LENGTH_SHORT).show()
+                // Turn on
+                if (!Settings.canDrawOverlays(this)) {
+                    Toast.makeText(this, "Please grant Floating Overlay permission (Step 1) first", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 }
+                mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
             }
         }
 
@@ -196,21 +191,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun isAccessibilityServiceEnabled(): Boolean {
-        if (CifiAccessibilityService.isServiceConnected) return true
-        val serviceName = "$packageName/${CifiAccessibilityService::class.java.canonicalName}"
-        val enabledServices = Settings.Secure.getString(
-            contentResolver,
-            Settings.Secure.ENABLED_ACCESSIBILITY_SERVICES
-        ) ?: return false
-        return enabledServices.contains(serviceName)
-    }
-
     private fun updateStatus() {
         val hasOverlay = Settings.canDrawOverlays(this)
-        val hasAccessibility = isAccessibilityServiceEnabled()
         val hasProjection = isProjectionAuthorized || CaptureService.mediaProjection != null
-        val isPaused = CifiAccessibilityService.isPaused(this)
+        val isOrbShowing = OverlayController.isShowing()
 
         // Update Overlay Button & Label
         if (hasOverlay) {
@@ -221,17 +205,6 @@ class MainActivity : AppCompatActivity() {
             binding.btnPermOverlay.text = "Grant"
             binding.btnPermOverlay.isEnabled = true
             binding.btnPermOverlay.setTextColor(ContextCompat.getColor(this, R.color.cyan_400))
-        }
-
-        // Update Accessibility Button
-        if (hasAccessibility) {
-            binding.btnPermAccessibility.text = "Active ✓"
-            binding.btnPermAccessibility.isEnabled = false
-            binding.btnPermAccessibility.setTextColor(ContextCompat.getColor(this, R.color.emerald_400))
-        } else {
-            binding.btnPermAccessibility.text = "Enable"
-            binding.btnPermAccessibility.isEnabled = true
-            binding.btnPermAccessibility.setTextColor(ContextCompat.getColor(this, R.color.cyan_400))
         }
 
         // Update Projection Button
@@ -245,9 +218,12 @@ class MainActivity : AppCompatActivity() {
             binding.btnPermMediaProjection.setTextColor(ContextCompat.getColor(this, R.color.cyan_400))
         }
 
+        // Update Show / Hide Floating Orb button
+        binding.btnTestOverlay.text = if (isOrbShowing) "Hide Floating Orb" else "Show Floating Orb"
+
         // Update Turn Off / Turn On button appearance
-        val isCompletelyOff = isPaused && !hasProjection && !OverlayController.isShowing()
-        if (isCompletelyOff) {
+        val isRunning = hasProjection || isOrbShowing
+        if (!isRunning) {
             binding.btnTurnOffAssistant.text = "Turn On Assistant"
             binding.btnTurnOffAssistant.setTextColor(ContextCompat.getColor(this, R.color.emerald_400))
         } else {
@@ -256,22 +232,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         // Overall status banner
-        if (isCompletelyOff) {
-            binding.tvOverallStatus.text = "Assistant Turned Off"
-            binding.tvOverallStatus.setTextColor(ContextCompat.getColor(this, R.color.rose_500))
-            binding.tvOverallStatusDesc.text = "All background capture and overlay services are stopped. Tap 'Turn On Assistant' to resume."
-        } else if (hasOverlay && hasAccessibility && hasProjection) {
-            binding.tvOverallStatus.text = "Companion Ready (0% Idle CPU)"
+        if (hasOverlay && hasProjection) {
+            binding.tvOverallStatus.text = if (isOrbShowing) {
+                "Companion Active • Orb Visible"
+            } else {
+                "Companion Active • Orb Hidden"
+            }
             binding.tvOverallStatus.setTextColor(ContextCompat.getColor(this, R.color.emerald_400))
-            binding.tvOverallStatusDesc.text = "Open CIFI to view the floating overlay. The companion will automatically display when the game launches."
+            binding.tvOverallStatusDesc.text = "Use the notification bar (or the buttons below) to hide/show the floating orb or turn off the assistant anytime."
         } else {
             val missing = mutableListOf<String>()
-            if (!hasOverlay) missing.add("Overlay")
-            if (!hasAccessibility) missing.add("Accessibility")
+            if (!hasOverlay) missing.add("Floating Overlay")
             if (!hasProjection) missing.add("Screen Capture")
-            binding.tvOverallStatus.text = "Action Required: Missing ${missing.joinToString(", ")}"
+            binding.tvOverallStatus.text = "Assistant Inactive (${missing.joinToString(", ")})"
             binding.tvOverallStatus.setTextColor(ContextCompat.getColor(this, R.color.amber_400))
-            binding.tvOverallStatusDesc.text = "Complete the required setup above to enable automatic detection and scanning."
+            binding.tvOverallStatusDesc.text = "Grant Floating Overlay and tap 'Authorize' (or 'Turn On Assistant') to start scanning."
         }
     }
 

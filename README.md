@@ -9,10 +9,10 @@
 
 ## ⚡ Key Highlights
 
-- **0.0% Background CPU Utilization**: Uses Android's `AccessibilityService` (`TYPE_WINDOW_STATE_CHANGED`) to stay completely dormant until `com.OctocubeGamesCompany.CIFI` enters the foreground.
+- **0.0% Idle CPU Utilization**: Captures a single frame only when you tap the scanner orb—never records or polls continuously in the background.
 - **Draggable Floating Orb**: Pops up a compact circular scanner orb with a live `[X/9]` page counter badge, tactile animations, and edge-snapping.
+- **Notification Quick-Controls**: Hide or show the floating orb (`Hide Orb` / `Show Orb`), copy your compiled Dossier (`Copy Dossier`), or shut down the assistant (`Turn Off`) right from the Android notification shade without losing your screen capture session.
 - **Instant On-Demand OCR + High-Contrast Filtering**: Captures a single frame buffer via `MediaProjection`, immediately tears down resources to maintain zero idle RAM overhead, and runs Google ML Kit on-device Text Recognition with resolution-independent coordinates and background-suppressed high-contrast crop passes for 100% offline accuracy.
-- **One-Tap Turn Off Control**: Includes a dedicated **Turn Off Assistant** button in the app (and on the foreground notification) to cleanly stop capture services, remove the floating overlay, and pause accessibility auto-detection at any time.
 - **Dual-Speed Classification**:
   1. *Fast Path (1-2ms)*: Direct pixel analysis of the cyan navigation tab bar (`Y = 35.5%`) to distinguish Profile Inventory vs Profile Stats.
   2. *Banner OCR*: Neural text classification on the gem title crop (`X: 18%..86%, Y: 20.5%..27%`) to detect any of the 7 Gem screens.
