@@ -18,3 +18,5 @@ app/build/
 *.class
 *.jks
 *.keystore
+__pycache__/
+*.pyc

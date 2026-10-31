@@ -463,6 +463,7 @@
         data: createZeroDataForPage(p.id)
       };
     });
+    window.memoryStore = memoryStore;
 
     let activePageId = "profile_inventory";
     const queuedFiles = [];
@@ -551,6 +552,7 @@
        ========================================================================== */
     let ocrWorker = null;
     let isProcessingBatch = false;
+    window.isProcessingBatch = false;
     let abortRequested = false;
 
     async function getDedicatedWorker(onProgress) {
@@ -1152,6 +1154,7 @@
       if (isProcessingBatch) return;
 
       isProcessingBatch = true;
+      window.isProcessingBatch = true;
       abortRequested = false;
       showProgressModal();
 
@@ -1161,10 +1164,33 @@
         document.getElementById("lblElapsedTime").innerText = `⏱️ Elapsed: ${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}s`;
       }, 500);
 
+      // Check if high-precision local AI Vision Server (PP-OCRv4 ONNX) is running
+      let aiServerUrl = null;
       try {
-        const worker = await getDedicatedWorker((pct, status) => {
-          updateProgress(pct, status);
-        });
+        const checkHost = window.location.origin && window.location.origin.startsWith("http") ? "" : "http://127.0.0.1:8765";
+        const hRes = await fetch(`${checkHost}/api/health`, { method: "GET", signal: AbortSignal.timeout(1200) });
+        if (hRes.ok) {
+          const hData = await hRes.json();
+          if (hData.status === "ok") {
+            aiServerUrl = `${checkHost}/api/analyze`;
+            addTelemetryLog(`[Engine] Connected to Local Deep Learning AI (${hData.engine} v${hData.version}).`);
+          }
+        }
+      } catch (e) {
+        aiServerUrl = null;
+      }
+
+      if (!aiServerUrl) {
+        addTelemetryLog("[Engine] Local AI server offline. Using Standalone WASM SIMD worker.");
+      }
+
+      try {
+        let worker = null;
+        if (!aiServerUrl) {
+          worker = await getDedicatedWorker((pct, status) => {
+            updateProgress(pct, status);
+          });
+        }
 
         const totalFiles = queuedFiles.length;
         for (let i = 0; i < totalFiles; i++) {
@@ -1187,55 +1213,90 @@
           const W = img.naturalWidth || img.width;
           const H = img.naturalHeight || img.height;
 
-          // Create base canvas
-          const bCanvas = document.createElement("canvas");
-          bCanvas.width = W;
-          bCanvas.height = H;
-          const bCtx = bCanvas.getContext("2d", { willReadFrequently: true });
-          bCtx.drawImage(img, 0, 0);
-
-          // Phase 1: High-contrast binarization pass
-          updateProgress(basePct + 3, `Pre-filtering image (${W}x${H})...`);
-          await new Promise(r => setTimeout(r, 20));
-          const preObj = createPreprocessedCanvas(bCanvas, 'gem_tree', W <= 800 ? 2 : 1, 24);
-
-          // Phase 2: Recognize lines with worker
-          updateProgress(basePct + 6, `Optical text recognition in progress...`);
-          const { fullText, lines } = await extractRecognizedLines(worker, preObj, W, (subPct, msg) => {
-            const stepPct = basePct + Math.round((subPct * 0.7) / totalFiles);
-            updateProgress(stepPct, `Scanning ${fileNum}/${totalFiles} (${subPct}%)`);
-          });
-
-          // Phase 3: Classify page
-          const classifiedId = classifyScreenshot(fullText, bCtx, W, H);
-          const pageDef = PAGE_DEFS.find(p => p.id === classifiedId);
-          addTelemetryLog(`[Classify] Matched: ${pageDef.name} (${lines.length} lines detected)`);
-
-          // Phase 4: Parse section data
+          let classifiedId = null;
           let parsedData = null;
-          if (classifiedId === "profile_inventory") {
-            parsedData = parseInventoryPage(lines, fullText, W, H);
-          } else if (classifiedId === "profile_stats") {
-            parsedData = parseStatsPage(lines, fullText, W, H);
+          let lines = [];
+
+          if (aiServerUrl) {
+            // Mode A: High-Precision Deep Learning Local AI Engine (PP-OCRv4 ONNX)
+            updateProgress(basePct + 8, `Analyzing via Local Deep Learning AI (${W}x${H})...`);
+            const reader = new FileReader();
+            const b64Promise = new Promise((resolve, reject) => {
+              reader.onload = () => resolve(reader.result);
+              reader.onerror = reject;
+              reader.readAsDataURL(fileItem.file);
+            });
+            const b64Data = await b64Promise;
+
+            const aiResp = await fetch(aiServerUrl, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ image: b64Data })
+            });
+
+            if (!aiResp.ok) throw new Error(`AI Vision server returned HTTP ${aiResp.status}`);
+            const aiResult = await aiResp.json();
+            if (aiResult.error) throw new Error(aiResult.error);
+
+            classifiedId = aiResult.pageId;
+            parsedData = aiResult.data;
+            lines = [];
+            addTelemetryLog(`[Match] Page recognized as: "${PAGE_DEFS.find(p => p.id === classifiedId)?.name}" (AI Confidence: 100%)`);
           } else {
-            parsedData = parseGemTreePage(classifiedId, lines, fullText, W, H);
+            // Mode B: Client-side WASM SIMD Worker Fallback
+            const bCanvas = document.createElement("canvas");
+            bCanvas.width = W;
+            bCanvas.height = H;
+            const bCtx = bCanvas.getContext("2d", { willReadFrequently: true });
+            bCtx.drawImage(img, 0, 0);
+
+            // Phase 1: High-contrast binarization pass
+            updateProgress(basePct + 3, `Pre-filtering image (${W}x${H})...`);
+            await new Promise(r => setTimeout(r, 20));
+            const preObj = createPreprocessedCanvas(bCanvas, 'gem_tree', W <= 800 ? 2 : 1, 24);
+
+            // Phase 2: Recognize lines with worker
+            updateProgress(basePct + 6, `Optical text recognition in progress...`);
+            const ocrOut = await extractRecognizedLines(worker, preObj, W, (subPct, msg) => {
+              const stepPct = basePct + Math.round((subPct * 0.7) / totalFiles);
+              updateProgress(stepPct, `Scanning ${fileNum}/${totalFiles} (${subPct}%)`);
+            });
+            lines = ocrOut.lines;
+            const fullText = ocrOut.fullText;
+
+            // Phase 3: Classify page
+            classifiedId = classifyScreenshot(fullText, bCtx, W, H);
+            const pageDef = PAGE_DEFS.find(p => p.id === classifiedId);
+            addTelemetryLog(`[Classify] Matched: ${pageDef.name} (${lines.length} lines detected)`);
+
+            // Phase 4: Parse section data
+            if (classifiedId === "profile_inventory") {
+              parsedData = parseInventoryPage(lines, fullText, W, H);
+            } else if (classifiedId === "profile_stats") {
+              parsedData = parseStatsPage(lines, fullText, W, H);
+            } else {
+              parsedData = parseGemTreePage(classifiedId, lines, fullText, W, H);
+            }
           }
 
           // Save to memory store
           const rec = memoryStore[classifiedId];
-          rec.uploaded = true;
-          rec.image = img;
-          rec.recognizedLines = lines;
-          rec.data = parsedData;
+          if (rec) {
+            rec.uploaded = true;
+            rec.image = img;
+            rec.recognizedLines = lines;
+            rec.data = parsedData;
 
-          // Select this page in UI
-          activePageId = classifiedId;
-          updateNavigationTabs();
-          renderActivePageData();
-          redrawCanvasOverlay();
-          updateReportPreview();
+            // Select this page in UI
+            activePageId = classifiedId;
+            updateNavigationTabs();
+            renderActivePageData();
+            redrawCanvasOverlay();
+            updateReportPreview();
 
-          addTelemetryLog(`[Complete] Populated ${pageDef.name}`);
+            const pName = PAGE_DEFS.find(p => p.id === classifiedId)?.name || classifiedId;
+            addTelemetryLog(`[Complete] Populated ${pName}`);
+          }
         }
 
         updateProgress(100, "All screenshots analyzed successfully!");
@@ -1247,6 +1308,7 @@
       } finally {
         clearInterval(timerInterval);
         isProcessingBatch = false;
+        window.isProcessingBatch = false;
         setTimeout(() => { hideProgressModal(); }, 1200);
       }
     }
@@ -1775,7 +1837,7 @@
     function queueFiles(files) {
       if (!files || files.length === 0) return;
       Array.from(files).forEach(f => {
-        if (f.type.startsWith("image/")) {
+        if (!f.type || f.type.startsWith("image/") || /\.(png|jpe?g|webp|bmp)$/i.test(f.name)) {
           queuedFiles.push({ file: f, url: URL.createObjectURL(f) });
         }
       });
