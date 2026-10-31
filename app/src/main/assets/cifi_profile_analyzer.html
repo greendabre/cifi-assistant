@@ -450,9 +450,9 @@
         upgrades: defs.map(d => ({
           name: d.name,
           reqLevel: d.reqLevel,
+          maxRank: d.maxRank,
           unlocked: false,
-          val: "0",
-          rank: `0 / ${d.maxRank}`
+          level: 0
         }))
       };
     }
@@ -981,24 +981,27 @@
         const item = document.createElement("div");
 
         if (u.unlocked) {
-          item.className = "bg-[#070614] border border-indigo-950 hover:border-indigo-800 rounded-lg p-2 flex flex-col justify-between gap-1 shadow-sm transition";
+          item.className = "bg-[#070614] border border-indigo-950 hover:border-indigo-800 rounded-lg p-2.5 flex flex-col justify-between gap-1 shadow-sm transition";
           item.innerHTML = `
             <div class="flex items-center justify-between">
-              <span class="text-[10px] font-mono font-bold text-slate-300 uppercase truncate w-28" title="${u.name}">${u.name}</span>
-              <input type="text" value="${u.rank}" class="bg-transparent text-[9px] font-mono text-slate-400 text-right w-16 focus:outline-none" oninput="d.upgrades[${idx}].rank=this.value;updateReport()">
+              <span class="text-[10px] font-mono font-bold text-slate-300 uppercase truncate" title="${u.name}">${u.name}</span>
+              <span class="text-[9px] font-mono text-slate-400">/ ${u.maxRank}</span>
             </div>
-            <input type="text" value="${u.val}" class="bg-transparent font-mono-code text-sm font-bold text-cyan-300 focus:outline-none focus:bg-indigo-950/40 rounded px-0.5" oninput="d.upgrades[${idx}].val=this.value;updateReport()">
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="text-[10px] font-mono font-bold text-cyan-400/80">LV.</span>
+              <input type="number" min="0" max="${u.maxRank}" value="${u.level}" class="bg-transparent font-mono-code text-base font-bold text-cyan-300 focus:outline-none focus:bg-indigo-950/40 rounded px-1 w-full" oninput="d.upgrades[${idx}].level=parseInt(this.value,10)||0;updateReport()">
+            </div>
           `;
         } else {
-          item.className = "bg-[#070614]/40 border border-dashed border-slate-800/80 rounded-lg p-2 flex flex-col justify-between gap-1 opacity-50";
+          item.className = "bg-[#070614]/40 border border-dashed border-slate-800/80 rounded-lg p-2.5 flex flex-col justify-between gap-1 opacity-50";
           item.innerHTML = `
             <div class="flex items-center justify-between">
-              <span class="text-[10px] font-mono text-slate-500 uppercase truncate w-28" title="${u.name}">${u.name}</span>
+              <span class="text-[10px] font-mono text-slate-500 uppercase truncate" title="${u.name}">${u.name}</span>
               <span class="text-[9px] font-mono text-amber-500/80">🔒 LOCKED</span>
             </div>
             <div class="flex items-center justify-between mt-1 text-[10px] font-mono text-slate-600">
               <span>Requires Level ${u.reqLevel}</span>
-              <span>---</span>
+              <span>/ ${u.maxRank}</span>
             </div>
           `;
         }
@@ -1742,6 +1745,50 @@
           return `${r1} / ${r2}`;
         }
         return raw.trim();
+      },
+      cleanLevel(rawStr, maxRank) {
+        if (!rawStr) return 0;
+        let s = rawStr.trim();
+        const maxRankNum = parseInt(maxRank, 10);
+        
+        s = s.replace(/zo/gi, "20");
+        s = s.replace(/399/g, "999");
+        s = s.replace(/939/g, "999");
+        s = s.replace(/350/g, "50");
+        s = s.replace(/390/g, "50");
+
+        if (s.includes('/') || s.includes(',')) {
+          const parts = s.split(/[\/,]/);
+          let left = parts[0].trim();
+          if (/^[I1][Cc]$/i.test(left)) left = "10";
+          if (/^V7$/i.test(left)) left = "17";
+          left = left.replace(/^[gq]$/i, '9');
+          left = left.replace(/[ODo]/g, '0')
+                     .replace(/[Il|]/g, '1')
+                     .replace(/[zZ]/g, '2')
+                     .replace(/[S]/g, '5')
+                     .replace(/[B]/g, '8');
+          const digits = left.replace(/\D/g, '');
+          const num = parseInt(digits, 10);
+          if (!isNaN(num) && num >= 0 && num <= maxRankNum) return num;
+        }
+
+        const m = s.match(/(?:^|\s)([0-9ICVzgqA-Za-z]+)\s*[\/,]\s*([0-9a-zA-Z]+)/);
+        if (m) {
+          let left = m[1].trim();
+          if (/^[I1][Cc]$/i.test(left)) left = "10";
+          if (/^V7$/i.test(left)) left = "17";
+          left = left.replace(/^[gq]$/i, '9');
+          left = left.replace(/[ODo]/g, '0').replace(/[Il|]/g, '1').replace(/[zZ]/g, '2').replace(/[S]/g, '5').replace(/[B]/g, '8');
+          const num = parseInt(left.replace(/\D/g, ''), 10);
+          if (!isNaN(num) && num >= 0 && num <= maxRankNum) return num;
+        }
+
+        if (maxRankNum === 15 && (s === "0s" || s === "Os" || s === "10s")) {
+          return 10;
+        }
+
+        return 0;
       }
     };
 
@@ -1983,7 +2030,7 @@
       return { fullText: data.text || '', lines };
     }
 
-    function matchesUpgradeName(name, text) {
+    function matchesUpgradeName(name, text, pageId = null, W = 0, line = null) {
       const nameUpper = name.toUpperCase();
       const textUpper = (text || "").toUpperCase();
       if (textUpper.includes(nameUpper)) return true;
@@ -1993,9 +2040,9 @@
         case "BONUS LP": return textUpper.includes("BONUS LP") || (textUpper.includes("BONUS") && !textUpper.includes("AVAILABLE") && !textUpper.includes("OUTPUT"));
         case "MK9 STABILITY": return textUpper.includes("STABILITY");
         case "MK9 RESONANCE": return textUpper.includes("RESONANCE");
-        case "STUDIES PER STUDY": return textUpper.includes("STUDIES");
-        case "BLUEPRINTS": return textUpper.includes("LUEPRINT") || textUpper.includes("BLUEPRINT");
-        case "INNOVATION CORES": return textUpper.includes("INNOVAT") || textUpper.includes("CORES");
+        case "STUDIES PER STUDY": return textUpper.includes("STUDIES") || textUpper.includes("STUDY");
+        case "BLUEPRINTS": return textUpper.includes("LUEPRINT") || textUpper.includes("BLUEPRINT") || textUpper.includes("PRINT");
+        case "INNOVATION CORES": return textUpper.includes("INNOVAT") || textUpper.includes("CORES") || textUpper.includes("CORE");
         case "CRADLE BONUS": return textUpper.includes("CRADLE");
         case "AUXESIA BONUS": return textUpper.includes("AUXESIA") || textUpper.includes("AUXESI");
         case "ZAGREUS BONUS": return textUpper.includes("ZAGREUS") || textUpper.includes("ZABREUS") || textUpper.includes("ZARREUS") || textUpper.includes("ZAGREL") || textUpper.includes("ZAGRE");
@@ -2013,22 +2060,22 @@
         case "HARDWARE BONUS": return textUpper.includes("HARDWARE") || textUpper.includes("AGOWARE") || textUpper.includes("ARDWARE");
         case "SOFTWARE BONUS": return textUpper.includes("SOFTWARE");
         case "TRINKET TIER BONUS": return textUpper.includes("TRINKET") || textUpper.includes("IER BONUS");
-        case "BORGE STAT BONUS": return textUpper.includes("BORGE") && textUpper.includes("STA");
-        case "OZZY STAT BONUS": return (textUpper.includes("OZZY") || textUpper.includes("0ZZY") || textUpper.includes("DZZY") || textUpper.includes("QZZY") || textUpper.includes("ZZY")) && textUpper.includes("STA");
-        case "KNOX STAT BONUS": return (textUpper.includes("KNOX") || textUpper.includes("KNDX") || textUpper.includes("CNDX") || textUpper.includes("SNOX") || textUpper.includes("NOX")) && textUpper.includes("STA");
+        case "BORGE STAT BONUS": return textUpper.includes("BORGE");
+        case "OZZY STAT BONUS": return textUpper.includes("OZZY") || textUpper.includes("0ZZY") || textUpper.includes("02ZY") || textUpper.includes("DZZY") || textUpper.includes("QZZY") || textUpper.includes("ZZY");
+        case "KNOX STAT BONUS": return textUpper.includes("KNOX") || textUpper.includes("KNDX") || textUpper.includes("CNDX") || textUpper.includes("SNOX") || textUpper.includes("NOX");
         case "MP BONUS (LMS)": return textUpper.includes("LMS");
         case "MP BONUS (TICKS)": return textUpper.includes("TICKS") && !textUpper.includes("SECOND");
         case "MP BONUS (ZAG RANK)": return textUpper.includes("ZAG RANK");
-        case "LM MAX LEVELS (LOW TIER)": return textUpper.includes("LM MAX") || textUpper.includes("LOW TIER");
-        case "MP BONUS (ZAG CREW)": return textUpper.includes("ZAG CREW");
+        case "LM MAX LEVELS (LOW TIER)": return textUpper.includes("LM MAX") || textUpper.includes("LOW TIER") || textUpper.includes("LOWSHER");
+        case "MP BONUS (ZAG CREW)": return textUpper.includes("ZAG CREW") || textUpper.includes("CREW");
         case "MP BONUS (LOOP RESETS)": return textUpper.includes("RESETS");
         case "MATS BONUS": return textUpper.includes("MATS");
         case "SHARD BONUS":
         case "SHARDS BONUS": return textUpper.includes("SHARD");
-        case "CELLS BONUS": return textUpper.includes("ELLS") || textUpper.includes("CELS");
+        case "CELLS BONUS": return textUpper.includes("CELLS") || textUpper.includes("ELLS") || textUpper.includes("CELS");
         case "RP BONUS": return textUpper.includes("RP");
         case "AP BONUS": return textUpper.includes("AP");
-        case "MP BONUS": return textUpper.includes("MP") && !textUpper.includes("(");
+        case "MP BONUS": return textUpper.includes("MP") && !textUpper.includes("(") && !textUpper.includes("LMS") && !textUpper.includes("TICKS") && !textUpper.includes("ZAG") && !textUpper.includes("RESETS");
         case "ORBS BONUS": return textUpper.includes("ORBS") || textUpper.includes("DRBS");
         default: return false;
       }
@@ -2529,22 +2576,15 @@
         }
       }
 
-      // Gem Upgrades — Strictly extracted from OCR lines, NO sampleVal/sampleRank defaults!
-      const masterSpecs = GEM_UPGRADE_DEFINITIONS[pageId] || [];
-      const rankRegex = /(?:^|\s)([0-9NZa]+\s*[\/,]\s*[0-9DOg]+|(?:IC|1C|E)\s*[\/,]\s*[0-9DOg]+)(?:\s|$)/i;
-      const nodeMaxDy = Math.floor(H * 0.095);
-      const valMaxDy = Math.floor(H * 0.055);
-      const nodeMaxDx = Math.floor(W * 0.115);
+      // Gem Upgrades — Only upgrade levels are captured, not bonuses!
+      const nodeMaxDy = Math.floor(H * 0.135);
+      const nodeMaxDx = Math.floor(W * 0.125);
 
       data.upgrades.forEach(u => {
         if (u.unlocked) {
-          const spec = masterSpecs.find(s => s.name === u.name);
-          const expectedPrefix = spec ? spec.prefix : null;
-          const expectedMaxRank = spec ? spec.maxRank : null;
-          u.val = "0";
-          u.rank = expectedMaxRank ? `0 / ${expectedMaxRank}` : "0 / 0";
+          u.level = 0;
 
-          const matchingLabels = lines.filter(l => l.centerY >= minUpgradeLabelY && l.centerY <= maxUpgradeLabelY && matchesUpgradeName(u.name, l.text));
+          const matchingLabels = lines.filter(l => l.centerY >= minUpgradeLabelY && l.centerY <= maxUpgradeLabelY && matchesUpgradeName(u.name, l.text, pageId, W, l));
           matchingLabels.sort((a, b) => b.bottom - a.bottom);
           const labelLine = matchingLabels[0];
 
@@ -2553,48 +2593,16 @@
             const nodeLines = lines.filter(l => l.top >= labelLine.bottom - 5 && l.top <= labelLine.bottom + nodeMaxDy && Math.abs(l.centerX - anchorX) <= nodeMaxDx)
               .sort((a, b) => a.top - b.top);
 
-            const isRankCandidate = (l) => {
-              if (rankRegex.test(l.text)) return true;
-              const t = l.text.trim();
-              return expectedMaxRank && t.endsWith(expectedMaxRank) && t.length > expectedMaxRank.length && /^\d+$/.test(t);
-            };
-
-            const rankLine = nodeLines.find(isRankCandidate);
-            if (rankLine) {
-              const rm = rankLine.text.match(rankRegex);
-              const rawRankStr = rm ? rm[1] : rankLine.text;
-              const cleanedRank = CifiNumberUtils.cleanRank(rawRankStr, expectedMaxRank);
-              const noSpace = cleanedRank.replace(/\s+/g, '');
-              const blobs = analyzeCharBlobs(srcCtx, W, H, rankLine.left, rankLine.top, rankLine.right, rankLine.bottom, 'rank');
-              let candidate = noSpace;
-              if (blobs.length === noSpace.length + 1 && /^[0-9]\/[0-9]+$/.test(noSpace)) {
-                candidate = '1' + noSpace;
-              }
-              u.rank = refineTokenWithBlobs(srcCtx, W, H, rankLine, candidate, 'rank').replace('/', ' / ');
-            }
-
-            const valLine = nodeLines.find(l => l !== rankLine && !isRankCandidate(l) && l.top <= labelLine.bottom + valMaxDy && /\d/.test(l.text) && !matchesUpgradeName(u.name, l.text));
-            if (valLine) {
-              const cleanedVal = CifiNumberUtils.cleanToken(valLine.text, expectedPrefix);
-              const rawHadPrefix = /^[+xXkKB^A*F]/.test(valLine.text.trim());
-              if (expectedPrefix && cleanedVal.startsWith(expectedPrefix) && !rawHadPrefix) {
-                const core = cleanedVal.substring(expectedPrefix.length);
-                u.val = expectedPrefix + refineTokenWithBlobs(srcCtx, W, H, valLine, core, 'gem');
-              } else {
-                u.val = refineTokenWithBlobs(srcCtx, W, H, valLine, cleanedVal, 'gem');
-              }
-            }
-
-            if (u.name.endsWith("STAT BONUS")) {
-              const curRank = parseInt(u.rank.split("/")[0].trim(), 10);
-              if (!isNaN(curRank) && curRank >= 1 && curRank <= 50) {
-                u.val = `x${(1.0 + curRank * 0.01).toFixed(2)}`;
+            for (const nl of nodeLines) {
+              const lvl = CifiNumberUtils.cleanLevel(nl.text, u.maxRank);
+              if (lvl > 0) {
+                u.level = lvl;
+                break;
               }
             }
           }
         } else {
-          u.val = "[LOCKED]";
-          u.rank = "LOCKED";
+          u.level = 0;
         }
       });
 
@@ -2700,13 +2708,13 @@
       const d = pData.data;
 
       if (pDefIsGem(pageId)) {
-        // Return only available (unlocked) upgrades, with strictly name, val, rank
+        // Return only available (unlocked) upgrades, with strictly name and level
         const availableUpgrades = d.upgrades
           .filter(u => u.unlocked)
           .map(u => ({
             name: u.name,
-            val: u.val,
-            rank: u.rank
+            level: u.level,
+            maxLevel: parseInt(u.maxRank, 10) || u.maxRank
           }));
 
         return {
@@ -2774,7 +2782,7 @@
         if (availableGUs.length === 0) {
           text += `  (No upgrades unlocked at current gem level)\n`;
         } else {
-          availableGUs.forEach(u => text += `  * ${u.name.padEnd(26)}: ${u.val.padEnd(14)} (${u.rank})\n`);
+          availableGUs.forEach(u => text += `  * ${u.name.padEnd(26)}: Level ${u.level} / ${u.maxRank}\n`);
         }
         if (lockedGUs.length > 0) {
           text += `\n[LOCKED UPGRADES (${lockedGUs.length} LOCKED)]\n`;
