@@ -47,8 +47,6 @@ CIFI Assistant/
 │   └── src/
 │       ├── main/
 │       │   ├── AndroidManifest.xml          # Services, Permissions, Launcher Activity
-│       │   ├── assets/
-│       │   │   └── cifi_profile_analyzer.html # Original optical web analyzer reference
 │       │   ├── res/
 │       │   │   ├── drawable/                # Cyber-themed scanner orb & vector icons
 │       │   │   ├── layout/
@@ -91,7 +89,7 @@ CIFI Assistant/
 ## 📥 Installation & Releases
 
 - **Android Companion App (`v1.1.0`)**: Download [**`CIFI-Assistant-v1.1.0.apk`**](https://github.com/greendabre/cifi-assistant/releases/tag/v1.1.0) and install it on your Android device (Android 8.0 / API 26 or newer).
-- **Standalone Web Optical Analyzer (`v1.0.0`)**: Download [**`cifi_profile_analyzer.html`**](https://github.com/greendabre/cifi-assistant/releases/tag/web-v1.0.0) (also available at the repository root and in `app/src/main/assets/cifi_profile_analyzer.html`). Open it in any desktop or mobile browser to drag-and-drop or paste (`Ctrl+V`) up to 9 CIFI screenshots and run the same client-side Optical Vision Engine with zero API keys required.
+- **Deep Learning Vision Analyzer (`v1.0.0`)**: Download [**`cifi_vision_analyzer.zip`**](https://github.com/greendabre/cifi-assistant/releases/tag/web-v1.0.0). Extract and double-click [**`run_vision_analyzer.bat`**](file:///z:/My%20Drive/Coding/CIFI%20Assistant/run_vision_analyzer.bat) — it automatically verifies/installs Python and all dependencies if not already installed, then launches the Local Deep Learning Vision Server ([PP-OCRv4 ONNX](https://github.com/PaddlePaddle/PaddleOCR)) and opens the dashboard in your default browser. 100% free, private, and local with zero setup.
 
 ## 🚀 How to Build from Source
 

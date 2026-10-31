@@ -20,3 +20,5 @@ app/build/
 *.keystore
 __pycache__/
 *.pyc
+*.zip
+scratch/
