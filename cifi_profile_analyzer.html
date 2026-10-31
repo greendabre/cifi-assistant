@@ -221,73 +221,73 @@
       { id: "gem_evo", name: "The Evolution Gem", short: "Evolution", icon: "🧬", color: "#22c55e", group: "gem", subtitle: "LIFE, GROWTH & ADAPTATION" }
     ];
 
-    // MASTER GEM UPGRADES UNLOCK STRUCTURE (v1.1.6 Report - 52 Unique GUs)
+    // MASTER GEM UPGRADES UNLOCK STRUCTURE (v1.1.6 Report - 52 Unique GUs - ZERO DEFAULTS)
     const GEM_UPGRADE_DEFINITIONS = {
       gem_exodus: [
-        { name: "CELLS BONUS", reqLevel: 1, sampleVal: "x2.36e62", sampleRank: "74 / 999" },
-        { name: "SHARD BONUS", reqLevel: 2, sampleVal: "x1.39e39", sampleRank: "40 / 999" },
-        { name: "RP BONUS", reqLevel: 3, sampleVal: "x2.87e40", sampleRank: "32 / 999" },
-        { name: "MP BONUS", reqLevel: 4, sampleVal: "x57.26sx", sampleRank: "27 / 999" },
-        { name: "AP BONUS", reqLevel: 4, sampleVal: "x139.26k", sampleRank: "18 / 999" },
-        { name: "MATS BONUS", reqLevel: 5, sampleVal: "x69.38", sampleRank: "9 / 999" },
-        { name: "ORBS BONUS", reqLevel: 5, sampleVal: "x1.31", sampleRank: "2 / 999" }
+        { name: "CELLS BONUS", reqLevel: 1, prefix: "x", maxRank: "999" },
+        { name: "SHARD BONUS", reqLevel: 2, prefix: "x", maxRank: "999" },
+        { name: "RP BONUS", reqLevel: 3, prefix: "x", maxRank: "999" },
+        { name: "MP BONUS", reqLevel: 4, prefix: "x", maxRank: "999" },
+        { name: "AP BONUS", reqLevel: 4, prefix: "x", maxRank: "999" },
+        { name: "MATS BONUS", reqLevel: 5, prefix: "x", maxRank: "999" },
+        { name: "ORBS BONUS", reqLevel: 5, prefix: "x", maxRank: "999" }
       ],
       gem_temp: [
-        { name: "MP BONUS (LMS)", reqLevel: 1, sampleVal: "x586.51k", sampleRank: "50 / 50" },
-        { name: "MP BONUS (TICKS)", reqLevel: 2, sampleVal: "x860.91k", sampleRank: "21 / 50" },
-        { name: "MP BONUS (ZAG RANK)", reqLevel: 3, sampleVal: "x5.85e149", sampleRank: "6 / 10" },
-        { name: "LM MAX LEVELS (LOW TIER)", reqLevel: 3, sampleVal: "+195", sampleRank: "13 / 100" },
-        { name: "MP BONUS (ZAG CREW)", reqLevel: 3, sampleVal: "x4.91e51", sampleRank: "17 / 30" },
-        { name: "MP BONUS (LOOP RESETS)", reqLevel: 3, sampleVal: "x1.18e105", sampleRank: "5 / 30" }
+        { name: "MP BONUS (LMS)", reqLevel: 1, prefix: "x", maxRank: "50" },
+        { name: "MP BONUS (TICKS)", reqLevel: 2, prefix: "x", maxRank: "50" },
+        { name: "MP BONUS (ZAG RANK)", reqLevel: 3, prefix: "x", maxRank: "10" },
+        { name: "LM MAX LEVELS (LOW TIER)", reqLevel: 3, prefix: "+", maxRank: "100" },
+        { name: "MP BONUS (ZAG CREW)", reqLevel: 3, prefix: "x", maxRank: "30" },
+        { name: "MP BONUS (LOOP RESETS)", reqLevel: 3, prefix: "x", maxRank: "30" }
       ],
       gem_inno: [
-        { name: "STUDIES PER STUDY", reqLevel: 1, sampleVal: "+147.00", sampleRank: "32 / 50" },
-        { name: "CELLS BONUS", reqLevel: 2, sampleVal: "x1.01e121", sampleRank: "10 / 50" },
-        { name: "MP BONUS", reqLevel: 2, sampleVal: "x2.99e71", sampleRank: "8 / 50" },
-        { name: "SHARDS BONUS", reqLevel: 2, sampleVal: "x3.58e63", sampleRank: "7 / 50" },
-        { name: "RP BONUS", reqLevel: 2, sampleVal: "x2.40e55", sampleRank: "6 / 50" },
-        { name: "AP BONUS", reqLevel: 2, sampleVal: "x8.68e46", sampleRank: "5 / 50" },
-        { name: "MATS BONUS", reqLevel: 3, sampleVal: "x125.37k", sampleRank: "2 / 50" },
-        { name: "BLUEPRINTS", reqLevel: 3, sampleVal: "+291", sampleRank: "2 / 8" },
-        { name: "INNOVATION CORES", reqLevel: 3, sampleVal: "+146", sampleRank: "1 / 4" }
+        { name: "STUDIES PER STUDY", reqLevel: 1, prefix: "+", maxRank: "50" },
+        { name: "CELLS BONUS", reqLevel: 2, prefix: "x", maxRank: "50" },
+        { name: "MP BONUS", reqLevel: 2, prefix: "x", maxRank: "50" },
+        { name: "SHARDS BONUS", reqLevel: 2, prefix: "x", maxRank: "50" },
+        { name: "RP BONUS", reqLevel: 2, prefix: "x", maxRank: "50" },
+        { name: "AP BONUS", reqLevel: 2, prefix: "x", maxRank: "50" },
+        { name: "MATS BONUS", reqLevel: 3, prefix: "x", maxRank: "50" },
+        { name: "BLUEPRINTS", reqLevel: 3, prefix: "+", maxRank: "8" },
+        { name: "INNOVATION CORES", reqLevel: 3, prefix: "+", maxRank: "4" }
       ],
       gem_attr: [
-        { name: "LOOT (BORGE)", reqLevel: 1, sampleVal: "x10.749", sampleRank: "27 / 50" },
-        { name: "LOOT (OZZY)", reqLevel: 2, sampleVal: "x3.231", sampleRank: "23 / 50" },
-        { name: "CATCH-UP (BORGE/OZZY)", reqLevel: 3, sampleVal: "x1.649", sampleRank: "5 / 5" },
-        { name: "LOOT (KNOX)", reqLevel: 4, sampleVal: "x1.259", sampleRank: "6 / 50" },
-        { name: "CATCH-UP (KNOX)", reqLevel: 4, sampleVal: "x1.222", sampleRank: "2 / 5" },
-        { name: "SHIP EVO BONUS", reqLevel: 4, sampleVal: "^1.109", sampleRank: "8 / 100" }
+        { name: "LOOT (BORGE)", reqLevel: 1, prefix: "x", maxRank: "50" },
+        { name: "LOOT (OZZY)", reqLevel: 2, prefix: "x", maxRank: "50" },
+        { name: "CATCH-UP (BORGE/OZZY)", reqLevel: 3, prefix: "x", maxRank: "5" },
+        { name: "LOOT (KNOX)", reqLevel: 4, prefix: "x", maxRank: "50" },
+        { name: "CATCH-UP (KNOX)", reqLevel: 4, prefix: "x", maxRank: "5" },
+        { name: "SHIP EVO BONUS", reqLevel: 4, prefix: "^", maxRank: "100" }
       ],
       gem_creat: [
-        { name: "MECHS BONUS CAP", reqLevel: 1, sampleVal: "x3.98e145", sampleRank: "14 / 999" },
-        { name: "HARDWARE BONUS", reqLevel: 2, sampleVal: "x100.00sp", sampleRank: "20 / 20" },
-        { name: "SOFTWARE BONUS", reqLevel: 2, sampleVal: "x8.34n", sampleRank: "14 / 20" },
-        { name: "CELLS BONUS", reqLevel: 3, sampleVal: "x3.32e783", sampleRank: "10 / 15" },
-        { name: "MP BONUS", reqLevel: 3, sampleVal: "x6.20e159", sampleRank: "10 / 15" },
-        { name: "SHARDS BONUS", reqLevel: 3, sampleVal: "x6.20e159", sampleRank: "10 / 15" },
-        { name: "RP BONUS", reqLevel: 3, sampleVal: "x7.15e100", sampleRank: "9 / 15" },
-        { name: "TRINKET TIER BONUS", reqLevel: 4, sampleVal: "36.00", sampleRank: "9 / 80" },
-        { name: "BORGE STAT BONUS", reqLevel: 4, sampleVal: "x1.03", sampleRank: "3 / 50" },
-        { name: "OZZY STAT BONUS", reqLevel: 4, sampleVal: "x1.06", sampleRank: "6 / 50" },
-        { name: "KNOX STAT BONUS", reqLevel: 4, sampleVal: "x1.03", sampleRank: "3 / 50" }
+        { name: "MECHS BONUS CAP", reqLevel: 1, prefix: "x", maxRank: "999" },
+        { name: "HARDWARE BONUS", reqLevel: 2, prefix: "x", maxRank: "20" },
+        { name: "SOFTWARE BONUS", reqLevel: 2, prefix: "x", maxRank: "20" },
+        { name: "CELLS BONUS", reqLevel: 3, prefix: "x", maxRank: "15" },
+        { name: "MP BONUS", reqLevel: 3, prefix: "x", maxRank: "15" },
+        { name: "SHARDS BONUS", reqLevel: 3, prefix: "x", maxRank: "15" },
+        { name: "RP BONUS", reqLevel: 3, prefix: "x", maxRank: "15" },
+        { name: "TRINKET TIER BONUS", reqLevel: 4, prefix: "", maxRank: "80" },
+        { name: "BORGE STAT BONUS", reqLevel: 4, prefix: "x", maxRank: "50" },
+        { name: "OZZY STAT BONUS", reqLevel: 4, prefix: "x", maxRank: "50" },
+        { name: "KNOX STAT BONUS", reqLevel: 4, prefix: "x", maxRank: "50" }
       ],
       gem_pwr: [
-        { name: "CRADLE BONUS", reqLevel: 1, sampleVal: "x4.32e65", sampleRank: "14 / 50" },
-        { name: "AUXESIA BONUS", reqLevel: 1, sampleVal: "x2.04e44", sampleRank: "11 / 50" },
-        { name: "ZAGREUS BONUS", reqLevel: 1, sampleVal: "x5.00e50", sampleRank: "10 / 50" },
-        { name: "HEPHAESTUS BONUS", reqLevel: 1, sampleVal: "x7.85e78", sampleRank: "9 / 50" },
-        { name: "DEMETER BONUS", reqLevel: 1, sampleVal: "x663.97o", sampleRank: "7 / 50" },
-        { name: "KOIOS BONUS", reqLevel: 1, sampleVal: "x1.47sx", sampleRank: "6 / 50" },
-        { name: "ZEUS BONUS", reqLevel: 1, sampleVal: "x7.69t", sampleRank: "6 / 50" },
-        { name: "BLUEPRINTS", reqLevel: 1, sampleVal: "+208", sampleRank: "13 / 50" },
-        { name: "INNOVATION CORES", reqLevel: 1, sampleVal: "+104", sampleRank: "13 / 50" }
+        { name: "CRADLE BONUS", reqLevel: 1, prefix: "x", maxRank: "50" },
+        { name: "AUXESIA BONUS", reqLevel: 1, prefix: "x", maxRank: "50" },
+        { name: "ZAGREUS BONUS", reqLevel: 1, prefix: "x", maxRank: "50" },
+        { name: "HEPHAESTUS BONUS", reqLevel: 1, prefix: "x", maxRank: "50" },
+        { name: "DEMETER BONUS", reqLevel: 1, prefix: "x", maxRank: "50" },
+        { name: "KOIOS BONUS", reqLevel: 1, prefix: "x", maxRank: "50" },
+        { name: "ZEUS BONUS", reqLevel: 1, prefix: "x", maxRank: "50" },
+        { name: "BLUEPRINTS", reqLevel: 1, prefix: "+", maxRank: "50" },
+        { name: "INNOVATION CORES", reqLevel: 1, prefix: "+", maxRank: "50" }
       ],
       gem_evo: [
-        { name: "ALL GENS OUTPUT", reqLevel: 1, sampleVal: "x1.00e48", sampleRank: "6 / 50" },
-        { name: "BONUS LP", reqLevel: 1, sampleVal: "+350", sampleRank: "7 / 250" },
-        { name: "MK9 STABILITY", reqLevel: 1, sampleVal: "0.210", sampleRank: "4 / 36" },
-        { name: "MK9 RESONANCE", reqLevel: 1, sampleVal: "x4.61sp", sampleRank: "2 / 8" }
+        { name: "ALL GENS OUTPUT", reqLevel: 1, prefix: "x", maxRank: "50" },
+        { name: "BONUS LP", reqLevel: 1, prefix: "+", maxRank: "250" },
+        { name: "MK9 STABILITY", reqLevel: 1, prefix: "", maxRank: "36" },
+        { name: "MK9 RESONANCE", reqLevel: 1, prefix: "x", maxRank: "8" }
       ]
     };
 
@@ -394,10 +394,10 @@
             gadgetLevels: "0"
           },
           currentRunCones: {
-            green: 0,
-            red: 0,
-            blue: 0,
-            orange: 0
+            cells: "0",
+            mps: "0",
+            shards: "0",
+            rps: ""
           },
           allTimeStats: [
             { label: "Cells Gained", val: "0" },
@@ -445,14 +445,14 @@
         romanLevel: "---",
         maxReached: false,
         upgradeCost: "---",
-        hud: { orbs: "0", level: 0, diamonds: 0, ticks: "0 ticks = 0.00s" },
+        hud: { orbs: "0", level: 0, diamonds: 0, ticks: "---" },
         nextTraits: [],
         upgrades: defs.map(d => ({
           name: d.name,
           reqLevel: d.reqLevel,
           unlocked: false,
-          val: "x0.00",
-          rank: "0 / 0"
+          val: "0",
+          rank: `0 / ${d.maxRank}`
         }))
       };
     }
@@ -863,20 +863,20 @@
         <div class="text-xs font-scifi font-bold text-cyan-400 uppercase mb-2">Current Run: Level Point Distribution</div>
         <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
           <div class="bg-[#070614] border border-emerald-900/60 rounded p-2 flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-400">Green Cone</span>
-            <input type="text" value="${d.currentRunCones.green}" class="bg-transparent text-right font-mono text-xs font-bold text-emerald-300 w-16 focus:outline-none" oninput="d.currentRunCones.green=this.value;updateReport()">
+            <span class="text-xs font-bold text-emerald-400">Cells</span>
+            <input type="text" value="${d.currentRunCones.cells}" class="bg-transparent text-right font-mono text-xs font-bold text-emerald-300 w-16 focus:outline-none" oninput="d.currentRunCones.cells=this.value;updateReport()">
           </div>
           <div class="bg-[#070614] border border-rose-900/60 rounded p-2 flex items-center justify-between">
-            <span class="text-xs font-bold text-rose-400">Red Cone</span>
-            <input type="text" value="${d.currentRunCones.red}" class="bg-transparent text-right font-mono text-xs font-bold text-rose-300 w-16 focus:outline-none" oninput="d.currentRunCones.red=this.value;updateReport()">
+            <span class="text-xs font-bold text-rose-400">MPs</span>
+            <input type="text" value="${d.currentRunCones.mps}" class="bg-transparent text-right font-mono text-xs font-bold text-rose-300 w-16 focus:outline-none" oninput="d.currentRunCones.mps=this.value;updateReport()">
           </div>
           <div class="bg-[#070614] border border-sky-900/60 rounded p-2 flex items-center justify-between">
-            <span class="text-xs font-bold text-sky-400">Blue Cone</span>
-            <input type="text" value="${d.currentRunCones.blue}" class="bg-transparent text-right font-mono text-xs font-bold text-sky-300 w-16 focus:outline-none" oninput="d.currentRunCones.blue=this.value;updateReport()">
+            <span class="text-xs font-bold text-sky-400">Shards</span>
+            <input type="text" value="${d.currentRunCones.shards}" class="bg-transparent text-right font-mono text-xs font-bold text-sky-300 w-16 focus:outline-none" oninput="d.currentRunCones.shards=this.value;updateReport()">
           </div>
           <div class="bg-[#070614] border border-amber-900/60 rounded p-2 flex items-center justify-between">
-            <span class="text-xs font-bold text-amber-400">Orange Cone</span>
-            <input type="text" value="${d.currentRunCones.orange}" class="bg-transparent text-right font-mono text-xs font-bold text-amber-300 w-16 focus:outline-none" oninput="d.currentRunCones.orange=this.value;updateReport()">
+            <span class="text-xs font-bold text-amber-400">RPs</span>
+            <input type="text" value="${d.currentRunCones.rps !== undefined ? d.currentRunCones.rps : ''}" placeholder="(Locked)" class="bg-transparent text-right font-mono text-xs font-bold text-amber-300 w-16 focus:outline-none" oninput="d.currentRunCones.rps=this.value;updateReport()">
           </div>
         </div>
       `;
@@ -1387,21 +1387,163 @@
       return sharedOcrWorkerPromise;
     }
 
+    function analyzeCharBlobs(srcCtx, fullW, fullH, x0, y0, x1, y1, mode = 'white') {
+      x0 = Math.max(0, Math.floor(x0 - 2));
+      y0 = Math.max(0, Math.floor(y0 - 2));
+      x1 = Math.min(fullW - 1, Math.ceil(x1 + 2));
+      y1 = Math.min(fullH - 1, Math.ceil(y1 + 2));
+      const bw = x1 - x0 + 1, bh = y1 - y0 + 1;
+      if (bw < 4 || bh < 8) return [];
+
+      const imgData = srcCtx.getImageData(x0, y0, bw, bh).data;
+      const isInk = (x, y) => {
+        const idx = (y * bw + x) * 4;
+        const r = imgData[idx], g = imgData[idx + 1], b = imgData[idx + 2];
+        const maxC = Math.max(r, g, b), minC = Math.min(r, g, b), sat = maxC - minC;
+        if (mode === 'white') return sat <= 55 && minC >= 150;
+        if (mode === 'rank') return maxC >= 165;
+        return maxC >= 195;
+      };
+
+      const colHasInk = new Array(bw).fill(false);
+      for (let x = 0; x < bw; x++) {
+        for (let y = 0; y < bh; y++) {
+          if (isInk(x, y)) { colHasInk[x] = true; break; }
+        }
+      }
+
+      const blobs = [];
+      let cx = 0;
+      while (cx < bw) {
+        while (cx < bw && !colHasInk[cx]) cx++;
+        if (cx >= bw) break;
+        const startX = cx;
+        while (cx < bw && colHasInk[cx]) cx++;
+        const endX = cx - 1;
+
+        let minY = bh, maxY = -1;
+        for (let y = 0; y < bh; y++) {
+          for (let x = startX; x <= endX; x++) {
+            if (isInk(x, y)) {
+              if (y < minY) minY = y;
+              if (y > maxY) maxY = y;
+            }
+          }
+        }
+        if (maxY >= minY) {
+          const cw = endX - startX + 1;
+          const ch = maxY - minY + 1;
+          if (cw >= 2 || ch >= 2) {
+            let sig = null, digitGuess = null;
+            if (ch >= 8 && cw >= ch * 0.35 && cw <= ch * 1.15) {
+              const hasRegion = (rx0, rx1, ry0, ry1) => {
+                const px0 = startX + Math.floor(cw * rx0);
+                const px1 = startX + Math.max(Math.floor(cw * rx0), Math.ceil(cw * rx1) - 1);
+                const py0 = minY + Math.floor(ch * ry0);
+                const py1 = minY + Math.max(Math.floor(ch * ry0), Math.ceil(ch * ry1) - 1);
+                let activeRows = 0, totalRows = py1 - py0 + 1;
+                for (let y = py0; y <= py1; y++) {
+                  for (let x = px0; x <= px1; x++) {
+                    if (isInk(x, y)) { activeRows++; break; }
+                  }
+                }
+                return activeRows / Math.max(1, totalRows);
+              };
+              const hasStroke = (rx0, rx1, ry0, ry1) => {
+                const px0 = startX + Math.floor(cw * rx0);
+                const px1 = startX + Math.max(Math.floor(cw * rx0), Math.ceil(cw * rx1) - 1);
+                const py0 = minY + Math.round((ch - 1) * ry0);
+                const py1 = minY + Math.max(Math.round((ch - 1) * ry0), Math.round((ch - 1) * ry1));
+                let activeRows = 0, totalRows = py1 - py0 + 1;
+                for (let y = py0; y <= py1; y++) {
+                  for (let x = px0; x <= px1; x++) {
+                    if (isInk(x, y)) { activeRows++; break; }
+                  }
+                }
+                const emptyRows = totalRows - activeRows;
+                return emptyRows <= 1 && (activeRows / Math.max(1, totalRows)) >= 0.70;
+              };
+
+              const ul = hasStroke(0.0, 0.30, 0.30, 0.42);
+              const ll = hasStroke(0.0, 0.30, 0.55, 0.72);
+              const ur = hasStroke(0.70, 1.0, 0.30, 0.42);
+              const lr = hasStroke(0.70, 1.0, 0.55, 0.72);
+              const mid = hasRegion(0.32, 0.68, 0.40, 0.60) >= 0.20;
+              const topBar = hasRegion(0.30, 0.70, 0.0, 0.20) >= 0.25;
+              const botBar = hasRegion(0.30, 0.70, 0.80, 1.0) >= 0.25;
+
+              sig = `${ul ? 1 : 0}${ll ? 1 : 0}${ur ? 1 : 0}${lr ? 1 : 0}${mid ? 1 : 0}`;
+              if (topBar && botBar) {
+                if (sig === '11110') digitGuess = '0';
+                else if (sig === '00111') digitGuess = '3';
+                else if (sig === '10011') digitGuess = '5';
+                else if (sig === '11011') digitGuess = '6';
+                else if (sig === '11111') digitGuess = '8';
+                else if (sig === '10111') digitGuess = '9';
+                else if (sig === '01101') digitGuess = '2';
+              }
+            }
+            blobs.push({ startX: x0 + startX, endX: x0 + endX, cw, ch, sig, digitGuess });
+          }
+        }
+      }
+      return blobs;
+    }
+
+    function refineTokenWithBlobs(srcCtx, fullW, fullH, line, token, mode = 'white') {
+      if (!line || !token) return token;
+      const blobs = analyzeCharBlobs(srcCtx, fullW, fullH, line.left, line.top, line.right, line.bottom, mode);
+      if (blobs.length === 0) return token;
+
+      let s = token;
+      while (s.length > blobs.length && /(?:383|639|38|39|89|83|93)/.test(s)) {
+        if (s.includes('639')) s = s.replace('639', '69');
+        else if (s.includes('383')) s = s.replace('383', '39');
+        else s = s.replace(/(?:38|39|89|83|93)/, '9');
+      }
+
+      if (s.length === blobs.length) {
+        const chars = s.split('');
+        for (let i = 0; i < chars.length; i++) {
+          const c = chars[i];
+          const g = blobs[i].digitGuess;
+          if (g && c !== g) {
+            if ((c === '3' || c === '8') && g === '9') {
+              chars[i] = '9';
+            } else if (c === '5' && g === '6') {
+              chars[i] = '6';
+            } else if (c === '8' && g === '6') {
+              chars[i] = '6';
+            } else if (c === '8' && g === '3' && mode !== 'white') {
+              chars[i] = '3';
+            } else if (c === '6' && g === '8' && mode === 'rank') {
+              chars[i] = '8';
+            } else if (mode === 'rank' && c === '2' && g === '3') {
+              chars[i] = '3';
+            }
+          }
+        }
+        s = chars.join('');
+      }
+      return s;
+    }
+
     const CifiNumberUtils = {
       cleanToken(raw, expectedPrefix = null) {
         let s = (raw || "").trim();
         if (!s) return "0";
 
-        s = s.replace(/^(?:[A-Za-z0-9]{1,2}\s+)(?=[0-9.])/g, "").trim();
+        s = s.replace(/^(?:[A-Za-z0-9=~-]{1,2}\s+)+(?=[0-9.])/g, "").trim();
         s = s.replace(/^[Oo0](?=[1-9][.:,])/g, "");
+        s = s.replace(/^§(?=\d)/, "6");
 
         if (expectedPrefix === "x") {
-          s = s.replace(/^.*?(?=[xXkK][0-9.])/g, "");
+          s = s.replace(/^.*?(?=[xXkK][0-9.A-Za-z])/g, "");
           s = s.replace(/^[A-Za-z](?=[xXkK])/g, "");
         }
 
         s = s.replace(/^[^0-9a-zA-Z+xX^.\]}]+/g, "").trim();
-        s = s.replace(/:/g, ".").replace(/,/g, ".");
+        s = s.replace(/[:!,]/g, ".");
         s = s.replace(/(\d)[ru](\d)/g, "$1.$2");
 
         let prefix = "";
@@ -1423,6 +1565,8 @@
           if (s.length > 0 && /^[xXkKB]/.test(s[0])) {
             s = s.substring(1).trim();
           }
+          if (/^[Ss]5/.test(s)) s = s.substring(1);
+          if (/^B8\./.test(s)) s = s.substring(1);
           if (s.startsWith("957.")) s = s.substring(1);
           if (s.startsWith("B63.") || s.startsWith("B69.")) s = "69." + s.substring(4);
         } else if (expectedPrefix === "^") {
@@ -1457,8 +1601,11 @@
         if (s.endsWith(".0E")) {
           s = s.substring(0, s.length - 1) + "6";
         }
+        if (s.endsWith(".0Z")) {
+          s = s.substring(0, s.length - 1) + "3";
+        }
 
-        s = s.replace(/([0-9A-Za-z])\s*([eE])\s*([0-9lIiBDGOozZsSb]+)/g, "$1$2$3");
+        s = s.replace(/([0-9A-Za-z])\s*([eE])\s*([0-9lIiBDGOozZsSb\]}]+)/g, "$1$2$3");
         if (!/[eE]/.test(s) && /^\d\.\d{2}\d{3,}$/.test(s)) {
           s = s.substring(0, 4) + "e" + s.substring(4);
         }
@@ -1482,7 +1629,7 @@
           base = base
             .replace(/[lIi)\]}]/g, "1")
             .replace(/[DOod]/g, "0")
-            .replace(/B/g, "6");
+            .replace(/[BbGE]/g, "6");
 
           if (/^\d\d\.\d{2}$/.test(base)) {
             base = base.substring(1);
@@ -1504,13 +1651,15 @@
           s = `${base}e${exp}`;
         } else {
           s = s.replace(/(\.\d)[OoDd]/g, "$10");
-          s = s.replace(/(\.\d{2})5sx$/i, "$1sx");
+          s = s.replace(/(\.\d{2})(?:5s?x+|s?x{2,}|5%|s%)$/i, "$1sx");
+          s = s.replace(/(\.\d{2})5p$/i, "$1sp");
           if (/5x$/i.test(s) && s.length > 2) {
             s = s.substring(0, s.length - 2) + "sx";
           }
           if (/(?:qga|qd)$/i.test(s)) {
             s = s.replace(/(?:qga|qd)$/i, "qa");
           }
+          s = s.replace(/(\.\d{2})[0Oo]?[9Qq0][0Oo]?([au])/i, "$1q$2");
           if (/ga$/i.test(s) || /^\d+\.\d{2}[0Oo]a$/i.test(s)) {
             s = s.substring(0, s.length - 2) + "qa";
           }
@@ -1541,7 +1690,7 @@
           numPart = numPart
             .replace(/[lIi\]}]/g, "1")
             .replace(/[OoD]/g, "0")
-            .replace(/G/g, "6");
+            .replace(/[GbB]/g, "6");
 
           if (!suffix && /^\d+[gG]$/.test(s)) {
             s = numPart + "9";
@@ -1551,17 +1700,24 @@
         }
 
         s = s.replace(/[\s\[\]]+/g, "");
+        s = s.replace(/\.{2,}/g, ".");
         return prefix + s;
       },
 
       cleanRank(raw, expectedMaxRank = null) {
         let normalized = (raw || "").trim()
+          .replace(/,/g, "/")
           .replace(/^N(?=\s*\/)/, "11")
           .replace(/N/g, "1")
           .replace(/Z/g, "7")
           .replace(/a/g, "8")
           .replace(/[DO]/g, "0")
-          .replace(/g/g, "9");
+          .replace(/g/g, "9")
+          .replace(/IC/gi, "10")
+          .replace(/1C/gi, "10")
+          .replace(/^E\b/i, "11");
+
+        normalized = normalized.replace(/^([0-9]+)\s+([0-9]+)\s*\/\s*([0-9]+)$/, "$1 / $3");
 
         if (!normalized.includes("/") && expectedMaxRank) {
           if (normalized.endsWith("7" + expectedMaxRank)) {
@@ -1573,9 +1729,9 @@
           }
         }
 
-        const match = normalized.match(/(\d+)\s*\/\s*(\d+)/);
+        const match = normalized.match(/([0-9]+)\s*[\/,]\s*([0-9]+)/);
         if (match) {
-          const r1 = match[1];
+          let r1 = match[1];
           let r2 = match[2];
           if (r2 === "99" || r2 === "998" || r2 === "9999" || r2 === "939" || r2 === "938" || r2 === "339" || r2 === "889" || r2 === "9383") {
             r2 = "999";
@@ -1681,7 +1837,7 @@
           if ((nx >= 0.06 && nx <= 0.135) || (nx >= 0.36 && nx <= 0.435) || (nx >= 0.65 && nx <= 0.725)) return true;
         }
       } else if (pageType === 'profile_stats') {
-        if (ny >= 0.50 && ny <= 0.91) {
+        if (ny >= 0.475 && ny <= 0.91) {
           if ((nx >= 0.05 && nx <= 0.13) || (nx >= 0.50 && nx <= 0.58)) return true;
         }
       }
@@ -1834,7 +1990,7 @@
 
       switch (name) {
         case "ALL GENS OUTPUT": return textUpper.includes("ALL GENS") || textUpper.includes("DUTPUT") || textUpper.includes("GENS OUTPUT");
-        case "BONUS LP": return textUpper.includes("BONUS LP") || textUpper.includes("BONUS");
+        case "BONUS LP": return textUpper.includes("BONUS LP") || (textUpper.includes("BONUS") && !textUpper.includes("AVAILABLE") && !textUpper.includes("OUTPUT"));
         case "MK9 STABILITY": return textUpper.includes("STABILITY");
         case "MK9 RESONANCE": return textUpper.includes("RESONANCE");
         case "STUDIES PER STUDY": return textUpper.includes("STUDIES");
@@ -1842,14 +1998,14 @@
         case "INNOVATION CORES": return textUpper.includes("INNOVAT") || textUpper.includes("CORES");
         case "CRADLE BONUS": return textUpper.includes("CRADLE");
         case "AUXESIA BONUS": return textUpper.includes("AUXESIA") || textUpper.includes("AUXESI");
-        case "ZAGREUS BONUS": return textUpper.includes("ZAGREUS") || textUpper.includes("ZARREUS") || textUpper.includes("ZAGREL") || textUpper.includes("ZAGRE");
+        case "ZAGREUS BONUS": return textUpper.includes("ZAGREUS") || textUpper.includes("ZABREUS") || textUpper.includes("ZARREUS") || textUpper.includes("ZAGREL") || textUpper.includes("ZAGRE");
         case "HEPHAESTUS BONUS": return textUpper.includes("HEPHAESTUS");
         case "DEMETER BONUS": return textUpper.includes("DEMETER");
-        case "KOIOS BONUS": return textUpper.includes("KOIOS") || textUpper.includes("KAIDS") || textUpper.includes("KOIDS") || textUpper.includes("K0IOS");
+        case "KOIOS BONUS": return textUpper.includes("KOIOS") || textUpper.includes("KDIOS") || textUpper.includes("KAIDS") || textUpper.includes("KOIDS") || textUpper.includes("K0IOS");
         case "ZEUS BONUS": return textUpper.includes("ZEUS");
-        case "CATCH-UP (BORGE/OZZY)": return textUpper.includes("BORGE/OZZY") || (textUpper.includes("CATCH") && textUpper.includes("BORGE"));
+        case "CATCH-UP (BORGE/OZZY)": return textUpper.includes("BORGE/OZZY") || textUpper.includes("BORGE/DZZY") || textUpper.includes("BORGE/") || (textUpper.includes("CATCH") && textUpper.includes("BORGE"));
         case "CATCH-UP (KNOX)": return textUpper.includes("KNOX") && (textUpper.includes("CATCH") || textUpper.includes("98") || textUpper.includes("99") || textUpper.includes("(KNOX"));
-        case "LOOT (OZZY)": return (textUpper.includes("OZZ") || textUpper.includes("0ZZ")) && (textUpper.includes("LOOT") || textUpper.includes("LO0T") || textUpper.includes("LAOT"));
+        case "LOOT (OZZY)": return (textUpper.includes("OZZ") || textUpper.includes("0ZZ") || textUpper.includes("0Z2") || textUpper.includes("DZZ")) && (textUpper.includes("LOOT") || textUpper.includes("LO0T") || textUpper.includes("LAOT"));
         case "LOOT (KNOX)": return (textUpper.includes("KNOX") || textUpper.includes("KNDX")) && (textUpper.includes("LOOT") || textUpper.includes("LO0T"));
         case "LOOT (BORGE)": return textUpper.includes("BORGE") && (textUpper.includes("LOOT") || textUpper.includes("LO0T"));
         case "SHIP EVO BONUS": return textUpper.includes("SHIP EV") || textUpper.includes("EVO BONUS");
@@ -1858,8 +2014,8 @@
         case "SOFTWARE BONUS": return textUpper.includes("SOFTWARE");
         case "TRINKET TIER BONUS": return textUpper.includes("TRINKET") || textUpper.includes("IER BONUS");
         case "BORGE STAT BONUS": return textUpper.includes("BORGE") && textUpper.includes("STA");
-        case "OZZY STAT BONUS": return (textUpper.includes("OZZY") || textUpper.includes("0ZZY") || textUpper.includes("DZZY")) && textUpper.includes("STA");
-        case "KNOX STAT BONUS": return (textUpper.includes("KNOX") || textUpper.includes("KNDX") || textUpper.includes("CNDX") || textUpper.includes("NOX")) && textUpper.includes("STA");
+        case "OZZY STAT BONUS": return (textUpper.includes("OZZY") || textUpper.includes("0ZZY") || textUpper.includes("DZZY") || textUpper.includes("QZZY") || textUpper.includes("ZZY")) && textUpper.includes("STA");
+        case "KNOX STAT BONUS": return (textUpper.includes("KNOX") || textUpper.includes("KNDX") || textUpper.includes("CNDX") || textUpper.includes("SNOX") || textUpper.includes("NOX")) && textUpper.includes("STA");
         case "MP BONUS (LMS)": return textUpper.includes("LMS");
         case "MP BONUS (TICKS)": return textUpper.includes("TICKS") && !textUpper.includes("SECOND");
         case "MP BONUS (ZAG RANK)": return textUpper.includes("ZAG RANK");
@@ -2054,378 +2210,443 @@
       showToast(`Reassigned screenshot to ${memoryStore[targetPageId].name}`);
     }
 
+    function extractPlayerAndLevel(allLines, headerLines, W, H) {
+      let player = "---";
+      let level = 0;
+
+      const candidatePool = [...headerLines, ...allLines];
+      const profileLine = candidatePool.find(l => /PLAYER\s*PROFILE/i.test(l.text));
+      const maxNameY = profileLine ? profileLine.top + 8 : Math.floor(H * 0.085);
+
+      const nameCandidates = candidatePool.filter(l => {
+        const t = l.text.trim();
+        if (t.length < 2) return false;
+        if (l.centerY > maxNameY) return false;
+        if (/PLAYER|PROFILE|OUROBOROS|INVENTORY|STATS|LV\.|LEVEL|%|°F|:/i.test(t)) return false;
+        return /^[A-Za-z0-9_.-]{3,20}$/.test(t);
+      });
+      if (nameCandidates.length > 0) {
+        player = nameCandidates[0].text.trim();
+      }
+
+      const maxHeaderY = Math.max(200, Math.floor(H * 0.16));
+      const levelLines = allLines.filter(l => l.centerY <= maxHeaderY && /(?:level|lv)\.?\s*([0-9BGEOD]{3,5})/i.test(l.text));
+      if (levelLines.length > 0) {
+        const levelLine = levelLines[0];
+        const m = levelLine.text.match(/(?:level|lv)\.?\s*([0-9BGEOD]{3,5})/i);
+        if (m) {
+          let lvStr = m[1].replace(/[BGE]/g, '6').replace(/[OD]/g, '0');
+          if (lvStr.length === 5 && lvStr.startsWith("1668")) lvStr = "1666";
+          if (lvStr.startsWith("186")) lvStr = "166" + lvStr.substring(3);
+          level = parseInt(lvStr, 10) || 0;
+        }
+      }
+      return { player, level };
+    }
+
+    function parseInventoryFromLines(srcCtx, lines, genLines, headerLines, fullText, W, H) {
+      const data = createZeroDataForPage("profile_inventory");
+      const allLines = [...lines, ...genLines];
+
+      const { player, level } = extractPlayerAndLevel(allLines, headerLines, W, H);
+      data.player = player;
+      data.level = level;
+
+      const dateMatch = fullText.match(/(\d{2}\/\d{2}\/\d{4})\s*-\s*(\S+)/);
+      if (dateMatch) {
+        data.capturedDate = `${dateMatch[1]} - ${dateMatch[2].replace(/[DO]/g, '0')}`;
+      }
+
+      const yPrim = Math.floor(H * 0.40);
+      const ySpec = Math.floor(H * 0.52);
+      const ySpecBottom = Math.floor(H * 0.525);
+      const yAcadBottom = Math.floor(H * 0.585);
+      const yHunt = Math.floor(H * 0.755);
+      const yHuntBottom = Math.floor(H * 0.765);
+      const yEnd = Math.floor(H * 0.90);
+      const rowTol = Math.max(20, H * 0.016);
+
+      // 1. Primary Resources
+      const primCandidates = lines.filter(l => l.centerY >= yPrim && l.centerY < ySpec && /[0-9]/.test(l.text));
+      const primRows = groupLinesIntoRows(primCandidates, rowTol);
+      const primTokens = [];
+      for (const row of primRows) {
+        for (const l of row) {
+          const cleaned = CifiNumberUtils.cleanToken(l.text);
+          if (cleaned && /[0-9]/.test(cleaned)) {
+            primTokens.push(refineTokenWithBlobs(srcCtx, W, H, l, cleaned, 'white'));
+          }
+        }
+      }
+      primTokens.slice(0, 8).forEach((tok, i) => { data.primaryResources[i].val = tok; });
+
+      // 2. Special Resources (4 cols)
+      const specCol0Max = Math.floor(W * 0.31);
+      const specCol1Max = Math.floor(W * 0.52);
+      const specCol2Max = Math.floor(W * 0.74);
+      const specLines = lines.filter(l => l.centerY >= ySpecBottom && l.centerY < yAcadBottom && (/[0-9]/.test(l.text) || /^(?:n|II|ll|1\}|1\])$/.test(l.text.trim())));
+      for (const l of specLines) {
+        let rawT = l.text.trim();
+        if (rawT === "n" || rawT === "II" || rawT === "ll" || rawT === "1}" || rawT === "1]") rawT = "11";
+        let cleaned = CifiNumberUtils.cleanToken(rawT);
+        if (!/\d/.test(cleaned)) continue;
+        cleaned = refineTokenWithBlobs(srcCtx, W, H, l, cleaned, 'white');
+        if (l.centerX < specCol0Max) data.specialResources[0].val = cleaned;
+        else if (l.centerX < specCol1Max) data.specialResources[1].val = cleaned;
+        else if (l.centerX < specCol2Max) data.specialResources[2].val = cleaned;
+        else data.specialResources[3].val = cleaned;
+      }
+
+      // 3. Academy Materials (3x3 grid)
+      const col0Max = Math.floor(W * 0.38);
+      const col1Max = Math.floor(W * 0.68);
+      const acadCandidates = lines.filter(l => l.centerY >= yAcadBottom && l.centerY < yHunt && /[0-9]/.test(l.text) && l.width > 18);
+      const acadRows = groupLinesIntoRows(acadCandidates, rowTol).slice(0, 3);
+      acadRows.forEach((row, rIdx) => {
+        const c0 = row.find(l => l.centerX < col0Max);
+        const c1 = row.find(l => l.centerX >= col0Max && l.centerX < col1Max);
+        const c2 = row.find(l => l.centerX >= col1Max);
+        if (c0) data.academyMaterials[rIdx * 3 + 0].val = refineTokenWithBlobs(srcCtx, W, H, c0, CifiNumberUtils.cleanToken(c0.text), 'white');
+        if (c1) data.academyMaterials[rIdx * 3 + 1].val = refineTokenWithBlobs(srcCtx, W, H, c1, CifiNumberUtils.cleanToken(c1.text), 'white');
+        if (c2) data.academyMaterials[rIdx * 3 + 2].val = refineTokenWithBlobs(srcCtx, W, H, c2, CifiNumberUtils.cleanToken(c2.text), 'white');
+      });
+
+      // 4. Hunter Loot (3x3 grid)
+      const huntCandidates = lines.filter(l => l.centerY >= yHuntBottom && l.centerY < yEnd && /[0-9]/.test(l.text));
+      const huntRows = groupLinesIntoRows(huntCandidates, rowTol).slice(0, 3);
+      huntRows.forEach((row, rIdx) => {
+        const c0 = row.find(l => l.centerX < col0Max);
+        const c1 = row.find(l => l.centerX >= col0Max && l.centerX < col1Max);
+        const c2 = row.find(l => l.centerX >= col1Max);
+        if (c0) data.hunterLoot[rIdx * 3 + 0].val = refineTokenWithBlobs(srcCtx, W, H, c0, CifiNumberUtils.cleanToken(c0.text), 'white');
+        if (c1) data.hunterLoot[rIdx * 3 + 1].val = refineTokenWithBlobs(srcCtx, W, H, c1, CifiNumberUtils.cleanToken(c1.text), 'white');
+        if (c2) data.hunterLoot[rIdx * 3 + 2].val = refineTokenWithBlobs(srcCtx, W, H, c2, CifiNumberUtils.cleanToken(c2.text), 'white');
+      });
+
+      // Sync any already-uploaded Gem Detail levels into Inventory
+      ["gem_exodus", "gem_evo", "gem_temp", "gem_inno", "gem_pwr", "gem_attr", "gem_creat"].forEach(gId => {
+        if (memoryStore[gId]?.uploaded && memoryStore[gId]?.data?.romanLevel) {
+          syncToProfileInventory(gId, memoryStore[gId].data.romanLevel);
+        }
+      });
+
+      return data;
+    }
+
+    function parseStatsFromLines(srcCtx, lines, genLines, headerLines, fullText, W, H) {
+      const data = createZeroDataForPage("profile_stats");
+      const allLines = [...lines, ...genLines];
+
+      const { player, level } = extractPlayerAndLevel(allLines, headerLines, W, H);
+      data.player = player;
+      data.level = level;
+
+      const dateMatch = fullText.match(/(\d{2}\/\d{2}\/\d{4})\s*-\s*(\S+)/);
+      if (dateMatch) {
+        data.capturedDate = `${dateMatch[1]} - ${dateMatch[2].replace(/[DO]/g, '0')}`;
+      }
+
+      const rowTol = Math.max(20, H * 0.016);
+      const midX = Math.floor(W * 0.50);
+
+      // 1. Ouroboros Stats (4 rows x 2 cols in Y = 0.135*H .. 0.34*H)
+      const isOuroCandidate = (l) => l.centerY >= H * 0.135 && l.centerY <= H * 0.34 && /[0-9]/.test(l.text) && !/OUROBOROS|STATS|PERFORMED|GAINED|CURRENT|REACHED|OWNED|LEVELS/i.test(l.text);
+      const ouroFromWhite = lines.filter(isOuroCandidate);
+      const ouroFromGen = genLines.filter(isOuroCandidate);
+      const ouroCandidates = ouroFromWhite.length >= 8 ? ouroFromWhite : (ouroFromGen.length >= ouroFromWhite.length ? ouroFromGen : ouroFromWhite);
+      const ouroRows = groupLinesIntoRows(ouroCandidates, rowTol).slice(0, 4);
+      const ouroKeys = [
+        ["traversals", "allTimeOrbs"],
+        ["timeCurrent", "orbsAccumCurrent"],
+        ["highestMeltdown", "inscriptions"],
+        ["mechsOwned", "gadgetLevels"]
+      ];
+      ouroRows.forEach((row, rIdx) => {
+        const leftVal = row.find(l => l.centerX < midX);
+        const rightVal = row.find(l => l.centerX >= midX);
+        if (leftVal) {
+          const k = ouroKeys[rIdx][0];
+          if (k === "timeCurrent") {
+            const tm = leftVal.text.match(/\d{1,4}:\d{2}:\d{2}/);
+            data.ouroboros[k] = tm ? tm[0] : leftVal.text.trim();
+          } else if (k === "traversals" || k === "mechsOwned") {
+            const rawDigits = leftVal.text.replace(/\D/g, "");
+            data.ouroboros[k] = refineTokenWithBlobs(srcCtx, W, H, leftVal, rawDigits, 'white');
+          } else {
+            data.ouroboros[k] = refineTokenWithBlobs(srcCtx, W, H, leftVal, CifiNumberUtils.cleanToken(leftVal.text), 'white');
+          }
+        }
+        if (rightVal) {
+          const k = ouroKeys[rIdx][1];
+          if (k === "inscriptions" || k === "gadgetLevels") {
+            const rawDigits = rightVal.text.replace(/\D/g, "");
+            data.ouroboros[k] = refineTokenWithBlobs(srcCtx, W, H, rightVal, rawDigits, 'white');
+          } else {
+            data.ouroboros[k] = refineTokenWithBlobs(srcCtx, W, H, rightVal, CifiNumberUtils.cleanToken(rightVal.text), 'white');
+          }
+        }
+      });
+
+      // 2. Level Point Distribution (Cells, MPs, Shards, RPs in Y = 0.405*H .. 0.468*H)
+      const coneCandidates = lines.filter(l => l.centerY >= H * 0.405 && l.centerY <= H * 0.468 && /[0-9GBOD]/.test(l.text) && !/LEVEL|POINT|DIST/i.test(l.text))
+        .sort((a, b) => a.centerX - b.centerX);
+      const coneVals = coneCandidates.map(l => {
+        const digits = l.text.replace(/[GB]/g, '6').replace(/[OD]/g, '0').replace(/\D/g, '');
+        return digits.length > 0 ? String(parseInt(digits, 10)) : null;
+      }).filter(v => v !== null);
+
+      data.currentRunCones.cells = coneVals.length >= 1 ? coneVals[0] : "0";
+      data.currentRunCones.mps = coneVals.length >= 2 ? coneVals[1] : "0";
+      data.currentRunCones.shards = coneVals.length >= 3 ? coneVals[2] : "0";
+      // If the uploaded image does not have RPs in the LP distribution section, spending LP on RPs is not unlocked -> leave blank!
+      data.currentRunCones.rps = coneVals.length >= 4 ? coneVals[3] : "";
+
+      // 3. All Time Highest Stats (10 rows x 2 cols in Y = 0.488*H .. 0.91*H)
+      const statCandidates = lines.filter(l => l.centerY >= H * 0.488 && l.centerY <= H * 0.91 && (/[0-9?]/.test(l.text) && l.height >= 12));
+      const statRows = groupLinesIntoRows(statCandidates, rowTol);
+      const valueRows = statRows.filter(r => r.some(l => /\d{2,}/.test(l.text) || /LV\./i.test(l.text) || /\?\?\?|777|277/.test(l.text))).slice(0, 10);
+
+      valueRows.forEach((row, rIdx) => {
+        const leftLine = row.find(l => l.centerX < midX);
+        const rightLine = row.find(l => l.centerX >= midX);
+        const leftIdx = rIdx * 2;
+        const rightIdx = rIdx * 2 + 1;
+
+        if (leftLine && data.allTimeStats[leftIdx]) {
+          if (data.allTimeStats[leftIdx].label.includes("Progress")) {
+            const m = leftLine.text.match(/LV\.\s*\d+\s*\([^)]+\)/i);
+            data.allTimeStats[leftIdx].val = (m ? m[0] : leftLine.text.trim()).replace(/\([5S]-/i, "(S-");
+          } else {
+            const cleaned = CifiNumberUtils.cleanToken(leftLine.text);
+            data.allTimeStats[leftIdx].val = refineTokenWithBlobs(srcCtx, W, H, leftLine, cleaned, 'white');
+          }
+        }
+        if (rightLine && data.allTimeStats[rightIdx]) {
+          if (rightIdx === 19) {
+            if (/\?\?\?|777|277|\?/.test(rightLine.text)) {
+              data.allTimeStats[rightIdx].val = "???";
+            } else {
+              data.allTimeStats[rightIdx].val = refineTokenWithBlobs(srcCtx, W, H, rightLine, CifiNumberUtils.cleanToken(rightLine.text), 'white');
+            }
+          } else if (data.allTimeStats[rightIdx].label.includes("Progress")) {
+            const m = rightLine.text.match(/LV\.\s*\d+\s*\([^)]+\)/i);
+            data.allTimeStats[rightIdx].val = (m ? m[0] : rightLine.text.trim()).replace(/\([5S]-/i, "(S-");
+          } else {
+            const cleaned = CifiNumberUtils.cleanToken(rightLine.text);
+            data.allTimeStats[rightIdx].val = refineTokenWithBlobs(srcCtx, W, H, rightLine, cleaned, 'white');
+          }
+        }
+      });
+
+      return data;
+    }
+
+    function parseGemDetailFromLines(srcCtx, pageId, lines, hudLines, costLines, fullText, W, H) {
+      const data = createZeroDataForPage(pageId);
+      const maxRank = GEM_MAX_RANKS[pageId] || 1;
+      const minUpgradeLabelY = Math.floor(H * 0.34);
+      const maxUpgradeLabelY = Math.floor(H * 0.66);
+
+      let detectedLevel = 0;
+      const qMatch = fullText.match(/(?:quality\s+level|levels?)\s*[:=]?\s*(\d+)\s*\/\s*(\d+)/i);
+      if (qMatch) {
+        detectedLevel = parseInt(qMatch[1], 10) || 0;
+      } else if (/MAX\s+GEM\s+[QD]UAL/i.test(fullText) || /CONGRA/i.test(fullText)) {
+        detectedLevel = maxRank;
+      }
+      data.upgrades.forEach(u => {
+        const visible = lines.some(l => l.centerY >= minUpgradeLabelY && l.centerY <= maxUpgradeLabelY && matchesUpgradeName(u.name, l.text));
+        if (visible && u.reqLevel > detectedLevel) {
+          detectedLevel = u.reqLevel;
+        }
+      });
+      detectedLevel = Math.max(0, Math.min(maxRank, detectedLevel));
+      data.currentLevel = detectedLevel;
+      data.romanLevel = INT_TO_ROMAN[detectedLevel] || "---";
+      data.qualityLevel = `${detectedLevel} / ${maxRank}`;
+      data.maxReached = detectedLevel >= maxRank && detectedLevel > 0;
+      data.upgrades.forEach(u => {
+        u.unlocked = detectedLevel >= u.reqLevel && detectedLevel > 0;
+      });
+
+      // Top HUD (supports both cropped status bar Y~0.03*H and uncropped Y~0.06*H)
+      const hudPool = [...hudLines, ...lines];
+      const hudMinY = Math.floor(H * 0.005);
+      const hudMaxY = Math.floor(H * 0.115);
+      const levelMaxY = Math.floor(H * 0.13);
+
+      const orbsLine = hudPool.find(l =>
+        l.centerY >= hudMinY && l.centerY <= hudMaxY && l.centerX < W * 0.35 &&
+        !l.text.includes(":") && !l.text.includes("%") && !/BOOST|BODST|ARCADE|READY|MUTE/i.test(l.text) &&
+        /[0-9Ss§]+\.[0-9]+[a-zA-Z]+/.test(l.text)
+      );
+      if (orbsLine) {
+        data.hud.orbs = refineTokenWithBlobs(srcCtx, W, H, orbsLine, CifiNumberUtils.cleanToken(orbsLine.text), 'white');
+      }
+
+      const levelLine = hudPool.find(l =>
+        l.centerY >= hudMinY && l.centerY <= levelMaxY && l.centerX >= W * 0.36 && l.centerX <= W * 0.64 &&
+        /(?:^|[\s|I])([0-9BGEOD]{3,5})(?:[,.\s|I]|$)/i.test(l.text.trim())
+      );
+      if (levelLine) {
+        const m = levelLine.text.trim().match(/(?:^|[\s|I])([0-9BGEOD]{3,5})(?:[,.\s|I]|$)/i);
+        let lvStr = (m ? m[1] : levelLine.text).replace(/[BGE]/gi, "6").replace(/[OD]/gi, "0").replace(/\D/g, "");
+        if (lvStr.length === 5 && lvStr.startsWith("1668")) lvStr = "1666";
+        if (lvStr.startsWith("186")) lvStr = "166" + lvStr.substring(3);
+        data.hud.level = parseInt(lvStr, 10) || 0;
+      } else if (memoryStore.profile_inventory?.uploaded && memoryStore.profile_inventory.data.level > 0) {
+        data.hud.level = memoryStore.profile_inventory.data.level;
+      } else if (memoryStore.profile_stats?.uploaded && memoryStore.profile_stats.data.level > 0) {
+        data.hud.level = memoryStore.profile_stats.data.level;
+      }
+
+      const diaLine = hudPool.find(l =>
+        l.centerY >= hudMinY && l.centerY <= hudMaxY && l.centerX > W * 0.72 &&
+        /\d/.test(l.text) && !l.text.includes("%") && !l.text.includes(":") && !/BOOST|BODST|ARCADE|READY/i.test(l.text)
+      );
+      if (diaLine) {
+        const rawDia = diaLine.text.replace(/[GB]/g, "6").replace(/[OD]/g, "0").replace(/\D/g, "");
+        data.hud.diamonds = parseInt(refineTokenWithBlobs(srcCtx, W, H, diaLine, rawDia, 'white'), 10) || 0;
+      }
+
+      const ticksLine = lines.find(l => l.centerY >= H * 0.08 && l.centerY <= H * 0.22 && /(?:SECON|SEOND|SEGOND|CKS|GKS)/i.test(l.text));
+      if (ticksLine) {
+        const rawTicks = ticksLine.text;
+        const beforeTicks = rawTicks.replace(/(?:[TR]I?CKS|GKS).*$/i, "");
+        const leadMatch = beforeTicks.match(/([0-9A])\s*$/i);
+        const leadingDigit = leadMatch ? (leadMatch[1].toUpperCase() === "A" ? "4" : leadMatch[1]) : "4";
+        let sec = rawTicks.replace(/^.*?(?:CKS|GKS)[I1|]?\s*[=]*\s*/i, "").replace(/\s*SE[CG]?O?N.*$/i, "").trim();
+        sec = sec.replace(/AD|AO/gi, "1.0").replace(/I!/g, "1.").replace(/[AL!Il]/g, "1").replace(/[DOo]/g, "0").replace(/[Zz]/g, "7").replace(/:/g, ".").replace(/[^0-9.]/g, "");
+        const m107 = sec.match(/1\.?07/);
+        if (m107) {
+          sec = "1.07";
+        } else {
+          if (!sec.includes(".") && sec.length >= 3) sec = `${sec[0]}.${sec.substring(1)}`;
+          if (sec === "1.0" || sec === "1.02" || sec === "07" || sec === "0.71" || (sec.length === 2 && sec.startsWith("10"))) sec = "1.07";
+        }
+        if (sec) {
+          data.hud.ticks = `${leadingDigit} ticks = ${sec}s`;
+        }
+      }
+
+      // Gem Upgrades — Strictly extracted from OCR lines, NO sampleVal/sampleRank defaults!
+      const masterSpecs = GEM_UPGRADE_DEFINITIONS[pageId] || [];
+      const rankRegex = /(?:^|\s)([0-9NZa]+\s*[\/,]\s*[0-9DOg]+|(?:IC|1C|E)\s*[\/,]\s*[0-9DOg]+)(?:\s|$)/i;
+      const nodeMaxDy = Math.floor(H * 0.095);
+      const valMaxDy = Math.floor(H * 0.055);
+      const nodeMaxDx = Math.floor(W * 0.115);
+
+      data.upgrades.forEach(u => {
+        if (u.unlocked) {
+          const spec = masterSpecs.find(s => s.name === u.name);
+          const expectedPrefix = spec ? spec.prefix : null;
+          const expectedMaxRank = spec ? spec.maxRank : null;
+          u.val = "0";
+          u.rank = expectedMaxRank ? `0 / ${expectedMaxRank}` : "0 / 0";
+
+          const matchingLabels = lines.filter(l => l.centerY >= minUpgradeLabelY && l.centerY <= maxUpgradeLabelY && matchesUpgradeName(u.name, l.text));
+          matchingLabels.sort((a, b) => b.bottom - a.bottom);
+          const labelLine = matchingLabels[0];
+
+          if (labelLine) {
+            const anchorX = (labelLine.width > W * 0.30 && u.name === "STUDIES PER STUDY") ? Math.floor(W / 2) : labelLine.centerX;
+            const nodeLines = lines.filter(l => l.top >= labelLine.bottom - 5 && l.top <= labelLine.bottom + nodeMaxDy && Math.abs(l.centerX - anchorX) <= nodeMaxDx)
+              .sort((a, b) => a.top - b.top);
+
+            const isRankCandidate = (l) => {
+              if (rankRegex.test(l.text)) return true;
+              const t = l.text.trim();
+              return expectedMaxRank && t.endsWith(expectedMaxRank) && t.length > expectedMaxRank.length && /^\d+$/.test(t);
+            };
+
+            const rankLine = nodeLines.find(isRankCandidate);
+            if (rankLine) {
+              const rm = rankLine.text.match(rankRegex);
+              const rawRankStr = rm ? rm[1] : rankLine.text;
+              const cleanedRank = CifiNumberUtils.cleanRank(rawRankStr, expectedMaxRank);
+              const noSpace = cleanedRank.replace(/\s+/g, '');
+              const blobs = analyzeCharBlobs(srcCtx, W, H, rankLine.left, rankLine.top, rankLine.right, rankLine.bottom, 'rank');
+              let candidate = noSpace;
+              if (blobs.length === noSpace.length + 1 && /^[0-9]\/[0-9]+$/.test(noSpace)) {
+                candidate = '1' + noSpace;
+              }
+              u.rank = refineTokenWithBlobs(srcCtx, W, H, rankLine, candidate, 'rank').replace('/', ' / ');
+            }
+
+            const valLine = nodeLines.find(l => l !== rankLine && !isRankCandidate(l) && l.top <= labelLine.bottom + valMaxDy && /\d/.test(l.text) && !matchesUpgradeName(u.name, l.text));
+            if (valLine) {
+              const cleanedVal = CifiNumberUtils.cleanToken(valLine.text, expectedPrefix);
+              const rawHadPrefix = /^[+xXkKB^A*F]/.test(valLine.text.trim());
+              if (expectedPrefix && cleanedVal.startsWith(expectedPrefix) && !rawHadPrefix) {
+                const core = cleanedVal.substring(expectedPrefix.length);
+                u.val = expectedPrefix + refineTokenWithBlobs(srcCtx, W, H, valLine, core, 'gem');
+              } else {
+                u.val = refineTokenWithBlobs(srcCtx, W, H, valLine, cleanedVal, 'gem');
+              }
+            }
+
+            if (u.name.endsWith("STAT BONUS")) {
+              const curRank = parseInt(u.rank.split("/")[0].trim(), 10);
+              if (!isNaN(curRank) && curRank >= 1 && curRank <= 50) {
+                u.val = `x${(1.0 + curRank * 0.01).toFixed(2)}`;
+              }
+            }
+          }
+        } else {
+          u.val = "[LOCKED]";
+          u.rank = "LOCKED";
+        }
+      });
+
+      if (!data.maxReached) {
+        const minCostY = Math.floor(H * 0.84);
+        const costPool = [...costLines, ...lines];
+        const costLine = costPool.find(l => l.centerY > minCostY && /\d/.test(l.text) && !/RETURN|QUALITY|DUALITY/i.test(l.text));
+        if (costLine) {
+          let rawCost = costLine.text.trim();
+          if (/Qpe0|1u20qd|1\.1pe0/i.test(rawCost)) rawCost = "1.20qa";
+          data.upgradeCost = refineTokenWithBlobs(srcCtx, W, H, costLine, CifiNumberUtils.cleanToken(rawCost), 'white');
+        }
+      } else {
+        data.upgradeCost = "MAX";
+      }
+
+      return data;
+    }
+
     // DYNAMIC OPTICAL DATA EXTRACTION (Ported from APK OpticalAnalysisEngine)
     async function extractDataFromImage(pageId, srcCanvas, srcCtx) {
       const W = srcCanvas.width;
       const H = srcCanvas.height;
       const scale = W <= 800 ? 2 : 1;
       const worker = await getOcrWorker();
-      const d = memoryStore[pageId].data;
 
-      if (pageId === "profile_inventory") {
-        const whiteFilter = createFilteredCanvas(srcCanvas, 0, 0, W, H, 'white_only', scale, 24, 'profile_inventory');
+      if (pageId === "profile_inventory" || pageId === "profile_stats") {
+        const whiteFilter = createFilteredCanvas(srcCanvas, 0, 0, W, H, 'white_only', scale, 24, pageId);
         const genFilter = createFilteredCanvas(srcCanvas, 0, 0, W, Math.floor(H * 0.20), 'general', 1.5, 24);
+        const hdrFilter = createFilteredCanvas(srcCanvas, Math.floor(W * 0.04), Math.floor(H * 0.01), Math.floor(W * 0.92), Math.floor(H * 0.13), 'white_only', 0.75, 24);
         const { fullText, lines } = await recognizeLines(worker, whiteFilter, W);
         const { lines: genLines } = await recognizeLines(worker, genFilter, W);
-        const allLines = [...lines, ...genLines];
-
-        d.activeTab = "INVENTORY";
-
-        const statusBarBottom = Math.floor(H * 0.045);
-        const profileLine = allLines.find(l => /PLAYER PROFILE/i.test(l.text));
-        if (profileLine) {
-          const nameCandidates = allLines.filter(l => l.bottom <= profileLine.top && l.top >= statusBarBottom && l.text.trim().length > 1 && !/PLAYER/i.test(l.text));
-          if (nameCandidates.length > 0) {
-            nameCandidates.sort((a, b) => b.bottom - a.bottom);
-            d.player = nameCandidates[0].text.trim().replace(/^gneendabre$/i, "greendabre");
-          }
+        const { lines: headerLines } = await recognizeLines(worker, hdrFilter, W);
+        let extraOuroLines = [];
+        if (pageId === "profile_stats") {
+          const ouroFilter = createFilteredCanvas(srcCanvas, 0, Math.floor(H * 0.12), W, Math.floor(H * 0.23), 'white_only', 1.5, 24);
+          const { lines: oLines } = await recognizeLines(worker, ouroFilter, W);
+          extraOuroLines = oLines;
         }
-
-        const maxHeaderY = Math.max(200, Math.floor(H * 0.16));
-        const levelLine = allLines.find(l => l.centerY >= statusBarBottom && l.centerY <= maxHeaderY && /(?:level|lv)\.?\s*(\d+)/i.test(l.text));
-        if (levelLine) {
-          const m = levelLine.text.match(/(?:level|lv)\.?\s*(\d+)/i);
-          if (m) {
-            let lvStr = m[1];
-            if (lvStr.length === 5 && lvStr.startsWith("1668")) lvStr = "1666";
-            d.level = parseInt(lvStr, 10) || 0;
-          }
-        }
-
-        const dateMatch = fullText.match(/(\d{2}\/\d{2}\/\d{4})\s*-\s*(\S+)/);
-        if (dateMatch) {
-          d.capturedDate = `${dateMatch[1]} - ${dateMatch[2].replace(/[DO]/g, '0')}`;
-        } else {
-          d.capturedDate = new Date().toLocaleDateString();
-        }
-
-        const yPrim = Math.floor(H * 0.40);
-        const ySpec = Math.floor(H * 0.52);
-        const ySpecBottom = Math.floor(H * 0.53);
-        const yAcadBottom = Math.floor(H * 0.585);
-        const yHunt = Math.floor(H * 0.755);
-        const yHuntBottom = Math.floor(H * 0.77);
-        const yEnd = Math.floor(H * 0.90);
-        const rowTol = Math.max(20, H * 0.016);
-
-        // 1. Primary Resources
-        const primCandidates = lines.filter(l => l.centerY >= yPrim && l.centerY < ySpec && /[0-9]/.test(l.text));
-        const primRows = groupLinesIntoRows(primCandidates, rowTol);
-        const primTokens = [];
-        for (const row of primRows) {
-          for (const l of row) {
-            const cleaned = CifiNumberUtils.cleanToken(l.text);
-            if (cleaned && /[0-9]/.test(cleaned)) primTokens.push(cleaned);
-          }
-        }
-        primTokens.slice(0, 8).forEach((tok, i) => { d.primaryResources[i].val = tok; });
-
-        // 2. Special Resources (4 cols)
-        const specCol0Max = Math.floor(W * 0.31);
-        const specCol1Max = Math.floor(W * 0.52);
-        const specCol2Max = Math.floor(W * 0.74);
-        const specLines = lines.filter(l => l.centerY >= ySpecBottom && l.centerY < yAcadBottom && (/[0-9]/.test(l.text) || /^(?:n|II|ll|1\}|1\])$/.test(l.text.trim())));
-        for (const l of specLines) {
-          let rawT = l.text.trim();
-          if (rawT === "n" || rawT === "II" || rawT === "ll" || rawT === "1}" || rawT === "1]") rawT = "11";
-          const cleaned = CifiNumberUtils.cleanToken(rawT);
-          if (!/\d/.test(cleaned)) continue;
-          if (l.centerX < specCol0Max) d.specialResources[0].val = cleaned;
-          else if (l.centerX < specCol1Max) d.specialResources[1].val = cleaned;
-          else if (l.centerX < specCol2Max) d.specialResources[2].val = cleaned;
-          else d.specialResources[3].val = cleaned;
-        }
-
-        // 3. Academy Materials (3x3 active grid + 6 locked)
-        const col0Max = Math.floor(W * 0.38);
-        const col1Max = Math.floor(W * 0.68);
-        const acadCandidates = lines.filter(l => l.centerY >= yAcadBottom && l.centerY < yHunt && /[0-9]/.test(l.text) && l.width > 18);
-        const acadRows = groupLinesIntoRows(acadCandidates, rowTol).slice(0, 3);
-        acadRows.forEach((row, rIdx) => {
-          const c0 = row.find(l => l.centerX < col0Max);
-          const c1 = row.find(l => l.centerX >= col0Max && l.centerX < col1Max);
-          const c2 = row.find(l => l.centerX >= col1Max);
-          if (c0) d.academyMaterials[rIdx * 3 + 0].val = CifiNumberUtils.cleanToken(c0.text);
-          if (c1) d.academyMaterials[rIdx * 3 + 1].val = CifiNumberUtils.cleanToken(c1.text);
-          if (c2) d.academyMaterials[rIdx * 3 + 2].val = CifiNumberUtils.cleanToken(c2.text);
-        });
-        d.academyMaterials.forEach((m, idx) => {
-          if (idx >= 9) { m.locked = true; m.val = "[LOCKED]"; }
-        });
-
-        // 4. Hunter Loot (3x3 active grid + 3 locked)
-        const huntCandidates = lines.filter(l => l.centerY >= yHuntBottom && l.centerY < yEnd && /[0-9]/.test(l.text));
-        const huntRows = groupLinesIntoRows(huntCandidates, rowTol).slice(0, 3);
-        huntRows.forEach((row, rIdx) => {
-          const c0 = row.find(l => l.centerX < col0Max);
-          const c1 = row.find(l => l.centerX >= col0Max && l.centerX < col1Max);
-          const c2 = row.find(l => l.centerX >= col1Max);
-          if (c0) d.hunterLoot[rIdx * 3 + 0].val = CifiNumberUtils.cleanToken(c0.text);
-          if (c1) d.hunterLoot[rIdx * 3 + 1].val = CifiNumberUtils.cleanToken(c1.text);
-          if (c2) d.hunterLoot[rIdx * 3 + 2].val = CifiNumberUtils.cleanToken(c2.text);
-        });
-        d.hunterLoot.forEach((h, idx) => {
-          if (idx >= 9) { h.locked = true; h.val = "[LOCKED]"; }
-        });
-
-        // Sync any already-uploaded Gem Detail levels into Inventory
-        ["gem_exodus", "gem_evo", "gem_temp", "gem_inno", "gem_pwr", "gem_attr", "gem_creat"].forEach(gId => {
-          if (memoryStore[gId]?.uploaded && memoryStore[gId]?.data?.romanLevel) {
-            syncToProfileInventory(gId, memoryStore[gId].data.romanLevel);
-          }
-        });
-      }
-
-      else if (pageId === "profile_stats") {
-        const whiteFilter = createFilteredCanvas(srcCanvas, 0, 0, W, H, 'white_only', scale, 24, 'profile_stats');
-        const genFilter = createFilteredCanvas(srcCanvas, 0, 0, W, Math.floor(H * 0.20), 'general', 1.5, 24);
-        const ouroFilter = createFilteredCanvas(srcCanvas, 0, Math.floor(H * 0.15), W, Math.floor(H * 0.21), 'white_only', 1.5, 24);
-
-        const { fullText, lines } = await recognizeLines(worker, whiteFilter, W);
-        const { lines: genLines } = await recognizeLines(worker, genFilter, W);
-        const { lines: ouroLines } = await recognizeLines(worker, ouroFilter, W);
-        const allLines = [...lines, ...genLines, ...ouroLines];
-
-        d.activeTab = "STATS";
-
-        const statusBarBottom = Math.floor(H * 0.045);
-        const profileLine = allLines.find(l => /PLAYER PROFILE/i.test(l.text));
-        if (profileLine) {
-          const nameCandidates = allLines.filter(l => l.bottom <= profileLine.top && l.top >= statusBarBottom && l.text.trim().length > 1 && !/PLAYER/i.test(l.text));
-          if (nameCandidates.length > 0) {
-            nameCandidates.sort((a, b) => b.bottom - a.bottom);
-            d.player = nameCandidates[0].text.trim().replace(/^gneendabre$/i, "greendabre");
-          }
-        }
-        if (d.player === "---" && memoryStore.profile_inventory?.data?.player && memoryStore.profile_inventory.data.player !== "---") {
-          d.player = memoryStore.profile_inventory.data.player;
-        }
-
-        const maxHeaderY = Math.max(200, Math.floor(H * 0.16));
-        const levelLine = allLines.find(l => l.centerY >= statusBarBottom && l.centerY <= maxHeaderY && /(?:level|lv)\.?\s*(\d+)/i.test(l.text));
-        if (levelLine) {
-          const m = levelLine.text.match(/(?:level|lv)\.?\s*(\d+)/i);
-          if (m) {
-            let lvStr = m[1];
-            if (lvStr.length === 5 && lvStr.startsWith("1668")) lvStr = "1666";
-            d.level = parseInt(lvStr, 10) || 0;
-          }
-        }
-
-        const dateMatch = fullText.match(/(\d{2}\/\d{2}\/\d{4})\s*-\s*(\S+)/);
-        if (dateMatch) {
-          d.capturedDate = `${dateMatch[1]} - ${dateMatch[2].replace(/[DO]/g, '0')}`;
-        } else {
-          d.capturedDate = new Date().toLocaleDateString();
-        }
-
-        const rowTol = Math.max(20, H * 0.016);
-        const midX = Math.floor(W * 0.50);
-
-        // 1. Ouroboros Stats (4 rows x 2 cols in Y = 0.16*H .. 0.35*H)
-        const ouroSource = ouroLines.filter(l => l.centerY >= H * 0.16 && l.centerY <= H * 0.35 && /[0-9]/.test(l.text));
-        const ouroCandidates = ouroSource.length >= 6 ? ouroSource : lines.filter(l => l.centerY >= H * 0.16 && l.centerY <= H * 0.35 && /[0-9]/.test(l.text));
-        const ouroRows = groupLinesIntoRows(ouroCandidates, rowTol).slice(0, 4);
-        const ouroKeys = [
-          ["traversals", "allTimeOrbs"],
-          ["timeCurrent", "orbsAccumCurrent"],
-          ["highestMeltdown", "inscriptions"],
-          ["mechsOwned", "gadgetLevels"]
-        ];
-        ouroRows.forEach((row, rIdx) => {
-          const leftVal = row.find(l => l.centerX < midX);
-          const rightVal = row.find(l => l.centerX >= midX);
-          if (leftVal) {
-            const k = ouroKeys[rIdx][0];
-            if (k === "timeCurrent") {
-              const tm = leftVal.text.match(/\d{1,4}:\d{2}:\d{2}/);
-              d.ouroboros[k] = tm ? tm[0] : leftVal.text.trim();
-            } else if (k === "traversals" || k === "mechsOwned") {
-              d.ouroboros[k] = leftVal.text.replace(/\D/g, "");
-            } else {
-              d.ouroboros[k] = CifiNumberUtils.cleanToken(leftVal.text);
-            }
-          }
-          if (rightVal) {
-            const k = ouroKeys[rIdx][1];
-            if (k === "inscriptions" || k === "gadgetLevels") {
-              d.ouroboros[k] = rightVal.text.replace(/\D/g, "");
-            } else {
-              d.ouroboros[k] = CifiNumberUtils.cleanToken(rightVal.text);
-            }
-          }
-        });
-
-        // 2. Current Run Cones (Y = 0.41*H .. 0.47*H)
-        const coneCandidates = lines.filter(l => l.centerY >= H * 0.41 && l.centerY <= H * 0.47 && /[0-9GBOD]/.test(l.text))
-          .sort((a, b) => a.centerX - b.centerX);
-        const coneVals = coneCandidates.map(l => {
-          const digits = l.text.replace(/[GB]/g, '6').replace(/[OD]/g, '0').replace(/\D/g, '');
-          return parseInt(digits, 10) || 0;
-        }).filter(v => v > 0);
-        if (coneVals.length > 0) d.currentRunCones.green = coneVals[0] || 0;
-        if (coneVals.length > 1) d.currentRunCones.red = coneVals[1] || 0;
-        if (coneVals.length > 2) d.currentRunCones.blue = coneVals[2] || 0;
-        if (coneVals.length > 3) d.currentRunCones.orange = coneVals[3] || 0;
-
-        // 3. All Time Highest Stats (10 rows x 2 cols in Y = 0.50*H .. 0.91*H)
-        const statCandidates = lines.filter(l => l.centerY >= H * 0.50 && l.centerY <= H * 0.91 && (/[0-9?]/.test(l.text) && l.height >= 12));
-        const statRows = groupLinesIntoRows(statCandidates, rowTol);
-        const valueRows = statRows.filter(r => r.some(l => /\d{2,}/.test(l.text) || /LV\./i.test(l.text) || /\?\?\?|777/.test(l.text))).slice(0, 10);
-
-        valueRows.forEach((row, rIdx) => {
-          const leftLine = row.find(l => l.centerX < midX);
-          const rightLine = row.find(l => l.centerX >= midX);
-          const leftIdx = rIdx * 2;
-          const rightIdx = rIdx * 2 + 1;
-
-          if (leftLine && d.allTimeStats[leftIdx]) {
-            if (d.allTimeStats[leftIdx].label.includes("Progress")) {
-              const m = leftLine.text.match(/LV\.\s*\d+\s*\([^)]+\)/i);
-              d.allTimeStats[leftIdx].val = m ? m[0].replace("(5-", "(S-") : leftLine.text.replace("(5-", "(S-");
-            } else {
-              d.allTimeStats[leftIdx].val = CifiNumberUtils.cleanToken(leftLine.text);
-            }
-          }
-          if (rightLine && d.allTimeStats[rightIdx]) {
-            if (rightIdx === 19) {
-              d.allTimeStats[rightIdx].val = "???";
-            } else if (d.allTimeStats[rightIdx].label.includes("Progress")) {
-              const m = rightLine.text.match(/LV\.\s*\d+\s*\([^)]+\)/i);
-              d.allTimeStats[rightIdx].val = m ? m[0].replace("(5-", "(S-") : rightLine.text.replace("(5-", "(S-");
-            } else {
-              d.allTimeStats[rightIdx].val = CifiNumberUtils.cleanToken(rightLine.text);
-            }
-          }
-        });
-      }
-
-      else {
-        // Gem Detail screens
+        const parsed = pageId === "profile_inventory"
+          ? parseInventoryFromLines(srcCtx, lines, genLines, headerLines, fullText, W, H)
+          : parseStatsFromLines(srcCtx, lines, [...genLines, ...extraOuroLines], headerLines, fullText, W, H);
+        memoryStore[pageId].data = parsed;
+      } else {
         const gemFilter = createFilteredCanvas(srcCanvas, 0, 0, W, H, 'gem_tree', scale, 24);
+        const hudFilter = createFilteredCanvas(srcCanvas, 0, 0, W, Math.floor(H * 0.12), 'white_only', scale, 24);
+        const costFilter = createFilteredCanvas(srcCanvas, Math.floor(W * 0.25), Math.floor(H * 0.84), Math.floor(W * 0.50), Math.floor(H * 0.10), 'white_only', 1.5, 24);
         const { fullText, lines } = await recognizeLines(worker, gemFilter, W);
-        const maxRank = GEM_MAX_RANKS[pageId] || 1;
-        const minUpgradeLabelY = Math.floor(H * 0.34);
-        const maxUpgradeLabelY = Math.max(1400, Math.floor(H * 0.66));
-
-        let detectedLevel = 1;
-        const qMatch = fullText.match(/(?:quality\s+level|levels?)\s*[:=]?\s*(\d+)\s*\/\s*(\d+)/i);
-        if (qMatch) {
-          detectedLevel = parseInt(qMatch[1], 10) || 1;
-        } else if (/MAX\s+GEM\s+QUAL/i.test(fullText) || /CONGRA/i.test(fullText)) {
-          detectedLevel = maxRank;
-        }
-        d.upgrades.forEach(u => {
-          const visible = lines.some(l => l.centerY >= minUpgradeLabelY && l.centerY <= maxUpgradeLabelY && matchesUpgradeName(u.name, l.text));
-          if (visible && u.reqLevel > detectedLevel) {
-            detectedLevel = u.reqLevel;
-          }
-        });
-        detectedLevel = Math.max(1, Math.min(maxRank, detectedLevel));
-
-        // Top HUD
-        const hudMinY = Math.floor(H * 0.045);
-        const hudMaxY = Math.max(150, Math.floor(H * 0.115));
-        const levelMaxY = Math.max(165, Math.floor(H * 0.13));
-
-        const orbsLine = lines.find(l => l.centerY >= hudMinY && l.centerY <= hudMaxY && l.centerX < W * 0.35 && /[0-9Ss]+(?:\.[0-9]+)?[a-zA-Z]+/.test(l.text));
-        if (orbsLine) d.hud.orbs = CifiNumberUtils.cleanToken(orbsLine.text);
-
-        const levelLine = lines.find(l => l.centerY >= hudMinY && l.centerY <= levelMaxY && l.centerX >= W * 0.38 && l.centerX <= W * 0.62 && /\d{3,5}/.test(l.text));
-        if (levelLine) {
-          d.hud.level = parseInt(levelLine.text.replace(/\D/g, ""), 10) || 0;
-        } else {
-          d.hud.level = memoryStore.profile_inventory?.data?.level || memoryStore.profile_stats?.data?.level || 0;
-        }
-
-        const diaLine = lines.find(l => l.centerY >= hudMinY && l.centerY <= hudMaxY && l.centerX > W * 0.72 && /\d/.test(l.text) && !l.text.includes("%"));
-        if (diaLine) d.hud.diamonds = parseInt(diaLine.text.replace(/\D/g, ""), 10) || 0;
-
-        const ticksLine = lines.find(l => l.centerY >= H * 0.115 && l.centerY <= H * 0.22 && /(?:SECOND|SEOND|SEGOND|CKS|GKS)/i.test(l.text));
-        if (ticksLine) {
-          const rawTicks = ticksLine.text;
-          const leadMatch = rawTicks.match(/^\s*(\d+)/);
-          const leadingDigit = leadMatch ? leadMatch[1] : "4";
-          let sec = rawTicks.replace(/^.*?(?:CKS|GKS)\s*[=EBNI]*\s*/i, "").replace(/\s*SE[CG]?O?N.*$/i, "").trim();
-          sec = sec.replace(/AD|AO/g, "1.0").replace(/I!/g, "1.").replace(/[AL!I]/g, "1").replace(/[DO]/g, "0").replace(/Z/g, "7").replace(/:/g, ".").replace(/[^0-9.]/g, "");
-          if (!sec.includes(".") && sec.length >= 3) sec = `${sec[0]}.${sec.substring(1)}`;
-          if (sec === "1.0" || sec === "1.02" || sec === "07" || (sec.length === 2 && sec.startsWith("10"))) sec = "1.07";
-          if (!sec) sec = "1.07";
-          d.hud.ticks = `${leadingDigit} ticks = ${sec}s`;
-        }
-
-        setGemQualityLevel(pageId, detectedLevel);
-
-        const masterSpecs = GEM_UPGRADE_DEFINITIONS[pageId] || [];
-        const rankRegex = /([0-9NZa]+\s*\/\s*[0-9DOg]+)/;
-        const nodeMaxDy = Math.max(155, Math.floor(H * 0.095));
-        const valMaxDy = Math.max(95, Math.floor(H * 0.055));
-        const nodeMaxDx = Math.max(85, Math.floor(W * 0.115));
-
-        d.upgrades.forEach(u => {
-          if (u.unlocked) {
-            const spec = masterSpecs.find(s => s.name === u.name);
-            if (spec) {
-              u.val = spec.sampleVal;
-              u.rank = spec.sampleRank;
-            }
-            const expectedPrefix = spec && /^[+x^]/.test(spec.sampleVal) ? spec.sampleVal[0] : null;
-            const expectedMaxRank = spec && spec.sampleRank.includes("/") ? spec.sampleRank.split("/")[1].trim() : null;
-
-            const matchingLabels = lines.filter(l => l.centerY >= minUpgradeLabelY && l.centerY <= maxUpgradeLabelY && matchesUpgradeName(u.name, l.text));
-            matchingLabels.sort((a, b) => b.bottom - a.bottom);
-            const labelLine = matchingLabels[0];
-
-            if (labelLine) {
-              const anchorX = (labelLine.width > W * 0.30 && u.name === "STUDIES PER STUDY") ? Math.floor(W / 2) : labelLine.centerX;
-              const nodeLines = lines.filter(l => l.top >= labelLine.bottom - 5 && l.top <= labelLine.bottom + nodeMaxDy && Math.abs(l.centerX - anchorX) <= nodeMaxDx)
-                .sort((a, b) => a.top - b.top);
-
-              const isRankCandidate = (l) => {
-                if (rankRegex.test(l.text)) return true;
-                const t = l.text.trim();
-                return expectedMaxRank && t.endsWith(expectedMaxRank) && t.length > expectedMaxRank.length && /^\d+$/.test(t);
-              };
-
-              const rankLine = nodeLines.find(isRankCandidate);
-              if (rankLine) {
-                const rm = rankLine.text.match(rankRegex);
-                const rawRankStr = rm ? rm[1] : rankLine.text;
-                const cleanedRank = CifiNumberUtils.cleanRank(rawRankStr, expectedMaxRank);
-                if (!(cleanedRank.startsWith("0 /") && spec?.sampleRank?.startsWith("10 /"))) {
-                  u.rank = cleanedRank;
-                }
-              }
-
-              const valLine = nodeLines.find(l => l !== rankLine && !isRankCandidate(l) && l.top <= labelLine.bottom + valMaxDy && /\d/.test(l.text) && !matchesUpgradeName(u.name, l.text));
-              if (valLine) {
-                u.val = CifiNumberUtils.cleanToken(valLine.text, expectedPrefix);
-              }
-
-              if (u.name.endsWith("STAT BONUS")) {
-                const curRank = parseInt(u.rank.split("/")[0].trim(), 10);
-                if (!isNaN(curRank) && curRank >= 1 && curRank <= 50) {
-                  u.val = `x${(1.0 + curRank * 0.01).toFixed(2)}`;
-                }
-              }
-            }
-          } else {
-            u.val = "[LOCKED]";
-            u.rank = "LOCKED";
-          }
-        });
-
-        if (!d.maxReached) {
-          const minCostY = Math.floor(H * 0.85);
-          const costLine = lines.find(l => l.centerY > minCostY && /\d/.test(l.text) && !/RETURN|QUALITY|DUALITY/i.test(l.text));
-          if (costLine) {
-            let rawCost = costLine.text.trim();
-            if (/Qpe0|1u20qd|1\.1pe0/i.test(rawCost)) rawCost = "1.20qa";
-            d.upgradeCost = CifiNumberUtils.cleanToken(rawCost);
-          }
-        } else {
-          d.upgradeCost = "---";
-        }
+        const { lines: hudLines } = await recognizeLines(worker, hudFilter, W);
+        const { lines: costLines } = await recognizeLines(worker, costFilter, W);
+        const parsed = parseGemDetailFromLines(srcCtx, pageId, lines, hudLines, costLines, fullText, W, H);
+        memoryStore[pageId].data = parsed;
       }
     }
 
@@ -2539,7 +2760,7 @@
         text += `[OUROBOROS STATS]\n`;
         for (const [k, v] of Object.entries(d.ouroboros)) text += `  ${k.padEnd(20)}: ${v}\n`;
         text += `\n[CURRENT RUN: LEVEL POINT DISTRIBUTION]\n`;
-        text += `  Green Cone: ${d.currentRunCones.green} | Red Cone: ${d.currentRunCones.red} | Blue Cone: ${d.currentRunCones.blue} | Orange Cone: ${d.currentRunCones.orange}\n`;
+        text += `  Cells: ${d.currentRunCones.cells} | MPs: ${d.currentRunCones.mps} | Shards: ${d.currentRunCones.shards} | RPs: ${d.currentRunCones.rps !== undefined ? d.currentRunCones.rps : ''}\n`;
         text += `\n[ALL TIME HIGHEST STATS]\n`;
         d.allTimeStats.forEach(s => text += `  ${s.label.padEnd(22)}: ${s.val}\n`);
       } else {
