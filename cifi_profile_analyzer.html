@@ -1285,6 +1285,25 @@
             rec.uploaded = true;
             rec.image = img;
             rec.recognizedLines = lines;
+
+            // Merge & normalize gem upgrades if it's a gem tree page
+            if (classifiedId.startsWith("gem_") && parsedData && parsedData.upgrades) {
+              const masterDefs = GEM_UPGRADE_DEFINITIONS[classifiedId] || [];
+              const curLvl = parsedData.currentLevel || 0;
+              parsedData.upgrades = parsedData.upgrades.map((u, idx) => {
+                const def = masterDefs[idx] || {};
+                const req = u.reqLevel ?? def.reqLevel ?? 1;
+                const maxR = u.maxRank ?? def.maxRank ?? 999;
+                return {
+                  name: u.name || def.name || `Upgrade ${idx + 1}`,
+                  reqLevel: req,
+                  maxRank: maxR,
+                  level: u.level || 0,
+                  unlocked: (u.unlocked !== undefined) ? u.unlocked : (curLvl >= req && curLvl > 0)
+                };
+              });
+            }
+
             rec.data = parsedData;
 
             // Select this page in UI
@@ -1617,18 +1636,20 @@
         <div>
           <div class="flex items-center justify-between mb-2">
             <span class="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-wider">Gem Upgrades (Levels Only)</span>
-            <span class="text-[9px] font-mono text-slate-500">${d.upgrades.filter(u => u.unlocked).length} / ${d.upgrades.length} Unlocked</span>
+            <span class="text-[9px] font-mono text-slate-500">${d.upgrades.filter(u => u.unlocked || (d.currentLevel >= (u.reqLevel || 1) && d.currentLevel > 0)).length} / ${d.upgrades.length} Unlocked</span>
           </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-            ${d.upgrades.map((u, i) => u.unlocked ? `
+            ${d.upgrades.map((u, i) => {
+              const isUnlocked = (u.unlocked !== undefined) ? u.unlocked : (d.currentLevel >= (u.reqLevel || 1) && d.currentLevel > 0);
+              return isUnlocked ? `
               <div class="bg-[#04030d] border border-indigo-950 hover:border-indigo-800 rounded-lg p-2.5 flex flex-col justify-between transition shadow-sm">
                 <div class="flex items-center justify-between mb-1">
                   <span class="text-[10px] font-mono font-bold text-slate-300 uppercase truncate" title="${u.name}">${u.name}</span>
-                  <span class="text-[9px] font-mono text-slate-500">/ ${u.maxRank}</span>
+                  <span class="text-[9px] font-mono text-slate-500">/ ${u.maxRank || 999}</span>
                 </div>
                 <div class="flex items-center gap-1">
                   <span class="text-[10px] font-mono font-bold text-cyan-400">LV.</span>
-                  <input type="number" min="0" max="${u.maxRank}" value="${u.level}" class="bg-transparent font-mono text-sm font-bold text-cyan-300 focus:outline-none focus:bg-indigo-950/40 rounded px-1 w-full" oninput="d.upgrades[${i}].level=parseInt(this.value,10)||0;updateReportPreview()">
+                  <input type="number" min="0" max="${u.maxRank || 999}" value="${u.level}" class="bg-transparent font-mono text-sm font-bold text-cyan-300 focus:outline-none focus:bg-indigo-950/40 rounded px-1 w-full" oninput="d.upgrades[${i}].level=parseInt(this.value,10)||0;updateReportPreview()">
                 </div>
               </div>
             ` : `
@@ -1638,11 +1659,12 @@
                   <span class="text-[9px] font-mono text-amber-500/80">🔒 LOCKED</span>
                 </div>
                 <div class="flex items-center justify-between text-[10px] font-mono text-slate-600">
-                  <span>Req Level ${u.reqLevel}</span>
-                  <span>/ ${u.maxRank}</span>
+                  <span>Req Level ${u.reqLevel || 1}</span>
+                  <span>/ ${u.maxRank || 999}</span>
                 </div>
               </div>
-            `).join('')}
+            `;
+            }).join('')}
           </div>
         </div>
 
@@ -1659,11 +1681,15 @@
       const rec = memoryStore[pageId];
       if (!rec || !rec.data) return;
       const d = rec.data;
+      const masterDefs = GEM_UPGRADE_DEFINITIONS[pageId] || [];
       d.currentLevel = Math.max(0, Math.min(d.maxLevel, parseInt(level, 10) || 0));
       d.romanLevel = INT_TO_ROMAN[d.currentLevel] || "---";
       d.qualityLevel = `${d.currentLevel} / ${d.maxLevel}`;
       d.maxReached = d.currentLevel >= d.maxLevel && d.currentLevel > 0;
-      d.upgrades.forEach(u => {
+      d.upgrades.forEach((u, idx) => {
+        const def = masterDefs[idx] || {};
+        u.reqLevel = u.reqLevel ?? def.reqLevel ?? 1;
+        u.maxRank = u.maxRank ?? def.maxRank ?? 999;
         u.unlocked = d.currentLevel >= u.reqLevel && d.currentLevel > 0;
       });
       renderActivePageData();

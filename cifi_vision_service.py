@@ -440,88 +440,88 @@ GEM_TREE_LAYOUTS = {
     "gem_exodus": {
         "maxQuality": 5,
         "upgrades": [
-            {"name": "RP BONUS", "pos": (0.51, 0.45), "max": 999},
-            {"name": "SHARD BONUS", "pos": (0.31, 0.51), "max": 999},
-            {"name": "MP BONUS", "pos": (0.71, 0.51), "max": 999},
-            {"name": "CELLS BONUS", "pos": (0.51, 0.56), "max": 999},
-            {"name": "ORBS BONUS", "pos": (0.31, 0.61), "max": 999},
-            {"name": "AP BONUS", "pos": (0.71, 0.61), "max": 999},
-            {"name": "MATS BONUS", "pos": (0.51, 0.66), "max": 999}
+            {"name": "RP BONUS", "pos": (0.51, 0.45), "max": 999, "req": 3},
+            {"name": "SHARD BONUS", "pos": (0.31, 0.51), "max": 999, "req": 2},
+            {"name": "MP BONUS", "pos": (0.71, 0.51), "max": 999, "req": 4},
+            {"name": "CELLS BONUS", "pos": (0.51, 0.56), "max": 999, "req": 1},
+            {"name": "ORBS BONUS", "pos": (0.31, 0.61), "max": 999, "req": 5},
+            {"name": "AP BONUS", "pos": (0.71, 0.61), "max": 999, "req": 4},
+            {"name": "MATS BONUS", "pos": (0.51, 0.66), "max": 999, "req": 5}
         ]
     },
     "gem_temp": {
         "maxQuality": 4,
         "upgrades": [
-            {"name": "MP BONUS (ZAG RANK)", "pos": (0.51, 0.45), "max": 10},
-            {"name": "MP BONUS (TICKS)", "pos": (0.31, 0.51), "max": 50},
-            {"name": "LM MAX LEVELS (LOW TIER)", "pos": (0.71, 0.51), "max": 100},
-            {"name": "MP BONUS (LMS)", "pos": (0.51, 0.56), "max": 50},
-            {"name": "MP BONUS (ZAG CREW)", "pos": (0.71, 0.61), "max": 30},
-            {"name": "MP BONUS (LOOP RESETS)", "pos": (0.51, 0.66), "max": 30}
+            {"name": "MP BONUS (ZAG RANK)", "pos": (0.51, 0.45), "max": 10, "req": 3},
+            {"name": "MP BONUS (TICKS)", "pos": (0.31, 0.51), "max": 50, "req": 2},
+            {"name": "LM MAX LEVELS (LOW TIER)", "pos": (0.71, 0.51), "max": 100, "req": 3},
+            {"name": "MP BONUS (LMS)", "pos": (0.51, 0.56), "max": 50, "req": 1},
+            {"name": "MP BONUS (ZAG CREW)", "pos": (0.71, 0.61), "max": 30, "req": 3},
+            {"name": "MP BONUS (LOOP RESETS)", "pos": (0.51, 0.66), "max": 30, "req": 3}
         ]
     },
     "gem_inno": {
         "maxQuality": 3,
         "upgrades": [
-            {"name": "MP BONUS", "pos": (0.51, 0.45), "max": 50},
-            {"name": "CELLS BONUS", "pos": (0.31, 0.51), "max": 50},
-            {"name": "SHARDS BONUS", "pos": (0.71, 0.51), "max": 50},
-            {"name": "BLUEPRINTS", "pos": (0.11, 0.56), "max": 8},
-            {"name": "STUDIES PER STUDY", "pos": (0.51, 0.56), "max": 50},
-            {"name": "INNOVATION CORES", "pos": (0.91, 0.56), "max": 4},
-            {"name": "MATS BONUS", "pos": (0.31, 0.61), "max": 50},
-            {"name": "RP BONUS", "pos": (0.71, 0.61), "max": 50},
-            {"name": "AP BONUS", "pos": (0.51, 0.66), "max": 50}
+            {"name": "MP BONUS", "pos": (0.51, 0.45), "max": 50, "req": 2},
+            {"name": "CELLS BONUS", "pos": (0.31, 0.51), "max": 50, "req": 2},
+            {"name": "SHARDS BONUS", "pos": (0.71, 0.51), "max": 50, "req": 2},
+            {"name": "BLUEPRINTS", "pos": (0.11, 0.56), "max": 8, "req": 3},
+            {"name": "STUDIES PER STUDY", "pos": (0.51, 0.56), "max": 50, "req": 1},
+            {"name": "INNOVATION CORES", "pos": (0.91, 0.56), "max": 4, "req": 3},
+            {"name": "MATS BONUS", "pos": (0.31, 0.61), "max": 50, "req": 3},
+            {"name": "RP BONUS", "pos": (0.71, 0.61), "max": 50, "req": 2},
+            {"name": "AP BONUS", "pos": (0.51, 0.66), "max": 50, "req": 2}
         ]
     },
     "gem_creat": {
         "maxQuality": 4,
         "upgrades": [
-            {"name": "KNOX STAT BONUS", "pos": (0.10, 0.45), "max": 50},
-            {"name": "SOFTWARE BONUS", "pos": (0.51, 0.45), "max": 20},
-            {"name": "HARDWARE BONUS", "pos": (0.31, 0.51), "max": 20},
-            {"name": "CELLS BONUS", "pos": (0.71, 0.51), "max": 15},
-            {"name": "TRINKET TIER BONUS", "pos": (0.10, 0.56), "max": 80},
-            {"name": "MECHS BONUS CAP", "pos": (0.51, 0.56), "max": 999},
-            {"name": "BORGE STAT BONUS", "pos": (0.91, 0.56), "max": 50},
-            {"name": "RP BONUS", "pos": (0.31, 0.61), "max": 15},
-            {"name": "MP BONUS", "pos": (0.71, 0.61), "max": 15},
-            {"name": "SHARDS BONUS", "pos": (0.51, 0.66), "max": 15},
-            {"name": "OZZY STAT BONUS", "pos": (0.91, 0.66), "max": 50}
+            {"name": "KNOX STAT BONUS", "pos": (0.10, 0.45), "max": 50, "req": 4},
+            {"name": "SOFTWARE BONUS", "pos": (0.51, 0.45), "max": 20, "req": 2},
+            {"name": "HARDWARE BONUS", "pos": (0.31, 0.51), "max": 20, "req": 2},
+            {"name": "CELLS BONUS", "pos": (0.71, 0.51), "max": 15, "req": 3},
+            {"name": "TRINKET TIER BONUS", "pos": (0.10, 0.56), "max": 80, "req": 4},
+            {"name": "MECHS BONUS CAP", "pos": (0.51, 0.56), "max": 999, "req": 1},
+            {"name": "BORGE STAT BONUS", "pos": (0.91, 0.56), "max": 50, "req": 4},
+            {"name": "RP BONUS", "pos": (0.31, 0.61), "max": 15, "req": 3},
+            {"name": "MP BONUS", "pos": (0.71, 0.61), "max": 15, "req": 3},
+            {"name": "SHARDS BONUS", "pos": (0.51, 0.66), "max": 15, "req": 3},
+            {"name": "OZZY STAT BONUS", "pos": (0.91, 0.66), "max": 50, "req": 4}
         ]
     },
     "gem_pwr": {
         "maxQuality": 3,
         "upgrades": [
-            {"name": "ZAGREUS BONUS", "pos": (0.51, 0.45), "max": 50},
-            {"name": "AUXESIA BONUS", "pos": (0.31, 0.51), "max": 50},
-            {"name": "HEPHAESTUS BONUS", "pos": (0.71, 0.51), "max": 50},
-            {"name": "BLUEPRINTS", "pos": (0.10, 0.56), "max": 50},
-            {"name": "CRADLE BONUS", "pos": (0.51, 0.56), "max": 50},
-            {"name": "INNOVATION CORES", "pos": (0.91, 0.56), "max": 50},
-            {"name": "ZEUS BONUS", "pos": (0.31, 0.61), "max": 50},
-            {"name": "DEMETER BONUS", "pos": (0.71, 0.61), "max": 50},
-            {"name": "KOIOS BONUS", "pos": (0.51, 0.66), "max": 50}
+            {"name": "ZAGREUS BONUS", "pos": (0.51, 0.45), "max": 50, "req": 1},
+            {"name": "AUXESIA BONUS", "pos": (0.31, 0.51), "max": 50, "req": 1},
+            {"name": "HEPHAESTUS BONUS", "pos": (0.71, 0.51), "max": 50, "req": 1},
+            {"name": "BLUEPRINTS", "pos": (0.10, 0.56), "max": 50, "req": 1},
+            {"name": "CRADLE BONUS", "pos": (0.51, 0.56), "max": 50, "req": 1},
+            {"name": "INNOVATION CORES", "pos": (0.91, 0.56), "max": 50, "req": 1},
+            {"name": "ZEUS BONUS", "pos": (0.31, 0.61), "max": 50, "req": 1},
+            {"name": "DEMETER BONUS", "pos": (0.71, 0.61), "max": 50, "req": 1},
+            {"name": "KOIOS BONUS", "pos": (0.51, 0.66), "max": 50, "req": 1}
         ]
     },
     "gem_evo": {
         "maxQuality": 1,
         "upgrades": [
-            {"name": "MK9 STABILITY", "pos": (0.31, 0.51), "max": 36},
-            {"name": "ALL GENS OUTPUT", "pos": (0.51, 0.56), "max": 50},
-            {"name": "MK9 RESONANCE", "pos": (0.31, 0.61), "max": 8},
-            {"name": "BONUS LP", "pos": (0.51, 0.66), "max": 250}
+            {"name": "MK9 STABILITY", "pos": (0.31, 0.51), "max": 36, "req": 1},
+            {"name": "ALL GENS OUTPUT", "pos": (0.51, 0.56), "max": 50, "req": 1},
+            {"name": "MK9 RESONANCE", "pos": (0.31, 0.61), "max": 8, "req": 1},
+            {"name": "BONUS LP", "pos": (0.51, 0.66), "max": 250, "req": 1}
         ]
     },
     "gem_attr": {
         "maxQuality": 4,
         "upgrades": [
-            {"name": "CATCH-UP (BORGE/OZZY)", "pos": (0.51, 0.45), "max": 5},
-            {"name": "LOOT (OZZY)", "pos": (0.31, 0.51), "max": 50},
-            {"name": "LOOT (KNOX)", "pos": (0.71, 0.51), "max": 50},
-            {"name": "LOOT (BORGE)", "pos": (0.51, 0.56), "max": 50},
-            {"name": "CATCH-UP (KNOX)", "pos": (0.71, 0.61), "max": 5},
-            {"name": "SHIP EVO BONUS", "pos": (0.51, 0.66), "max": 100}
+            {"name": "CATCH-UP (BORGE/OZZY)", "pos": (0.51, 0.45), "max": 5, "req": 3},
+            {"name": "LOOT (OZZY)", "pos": (0.31, 0.51), "max": 50, "req": 2},
+            {"name": "LOOT (KNOX)", "pos": (0.71, 0.51), "max": 50, "req": 4},
+            {"name": "LOOT (BORGE)", "pos": (0.51, 0.56), "max": 50, "req": 1},
+            {"name": "CATCH-UP (KNOX)", "pos": (0.71, 0.61), "max": 5, "req": 4},
+            {"name": "SHIP EVO BONUS", "pos": (0.51, 0.66), "max": 100, "req": 4}
         ]
     }
 }
@@ -538,7 +538,16 @@ def parse_gem_tree(page_id, img, boxes):
         "maxReached": False,
         "upgradeCost": "---",
         "hud": {"orbs": "0", "level": 0, "diamonds": 0, "ticks": "---"},
-        "upgrades": [{"name": u["name"], "level": 0} for u in cfg["upgrades"]]
+        "upgrades": [
+            {
+                "name": u["name"],
+                "reqLevel": u.get("req", 1),
+                "maxRank": u.get("max", 999),
+                "level": 0,
+                "unlocked": False
+            }
+            for u in cfg["upgrades"]
+        ]
     }
 
     # Quality Level e.g. "GEM QUALITY LEVEL 5 / 5"
@@ -604,6 +613,10 @@ def parse_gem_tree(page_id, img, boxes):
                 if lvl > 0:
                     data["upgrades"][i]["level"] = lvl
                     break
+
+    # Calculate unlock state based on current gem quality level
+    for u in data["upgrades"]:
+        u["unlocked"] = (data["currentLevel"] >= u["reqLevel"] and data["currentLevel"] > 0)
 
     return data
 
