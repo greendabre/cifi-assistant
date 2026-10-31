@@ -88,9 +88,10 @@ CIFI Assistant/
 
 ---
 
-## 📥 Installation (Pre-built APK)
+## 📥 Installation & Releases
 
-Download the latest **`CIFI-Assistant-v1.1.0.apk`** from the [**GitHub Releases page**](https://github.com/greendabre/cifi-assistant/releases/latest) and install it on your Android device (Android 8.0 / API 26 or newer).
+- **Android Companion App (`v1.1.0`)**: Download [**`CIFI-Assistant-v1.1.0.apk`**](https://github.com/greendabre/cifi-assistant/releases/tag/v1.1.0) and install it on your Android device (Android 8.0 / API 26 or newer).
+- **Standalone Web Optical Analyzer (`v1.0.0`)**: Download [**`cifi_profile_analyzer.html`**](https://github.com/greendabre/cifi-assistant/releases/tag/web-v1.0.0) (also available at the repository root and in `app/src/main/assets/cifi_profile_analyzer.html`). Open it in any desktop or mobile browser to drag-and-drop or paste (`Ctrl+V`) up to 9 CIFI screenshots and run the same client-side Optical Vision Engine with zero API keys required.
 
 ## 🚀 How to Build from Source
 

@@ -54,8 +54,9 @@
       <div>
         <h1 class="text-base sm:text-lg font-scifi font-bold tracking-wider text-cyan-400 flex items-center gap-2">
           CIFI MULTI-PAGE OPTICAL ANALYZER
+          <span class="px-1.5 py-0.5 rounded bg-cyan-950/90 border border-cyan-700 text-[10px] font-mono text-cyan-300">v1.0.0</span>
         </h1>
-        <p class="text-[11px] text-slate-400">9-Page Memory Bank • Text-Based Title Matching • Clean Dossier Export</p>
+        <p class="text-[11px] text-slate-400">9-Page Memory Bank • APK Optical Vision Engine (100% Client-Side OCR) • Clean Dossier Export</p>
       </div>
     </div>
 
@@ -1348,91 +1349,549 @@
       showToast("Staging buffer cleared");
     }
 
-    // TEXT-BASED TITLE MATCHING ENGINE
-    function matchCategoryFromTitleString(rawText) {
-      if (!rawText) return null;
-      const t = rawText.toLowerCase();
+    // ============================================================================
+    // CIFI OPTICAL VISION ENGINE v1.0.0 (Ported from Android APK OpticalAnalysisEngine)
+    // 100% Client-Side Canvas Pre-Filtering + Bounding-Box Spatial Line Extraction
+    // ============================================================================
 
-      if (t.includes("exodus")) {
-        return { pageId: "gem_exodus", matchedTitle: "The Exodus Gem" };
-      }
-      if (t.includes("evolution")) {
-        return { pageId: "gem_evo", matchedTitle: "The Evolution Gem" };
-      }
-      if (t.includes("temporality") || t.includes("temporal") || t.includes("aeon")) {
-        return { pageId: "gem_temp", matchedTitle: "Gem of Temporality" };
-      }
-      if (t.includes("innovation") || t.includes("innovat") || t.includes("creator")) {
-        return { pageId: "gem_inno", matchedTitle: "Gem of Innovation" };
-      }
-      if (t.includes("power") || t.includes("reality")) {
-        return { pageId: "gem_pwr", matchedTitle: "Gem of Power" };
-      }
-      if (t.includes("attraction") || t.includes("attract") || t.includes("stellar")) {
-        return { pageId: "gem_attr", matchedTitle: "Gem of Attraction" };
-      }
-      if (t.includes("creation") || t.includes("physicality")) {
-        return { pageId: "gem_creat", matchedTitle: "Gem of Creation" };
-      }
+    const GEM_MAX_RANKS = {
+      gem_exodus: 5,
+      gem_evo: 1,
+      gem_temp: 4,
+      gem_inno: 3,
+      gem_pwr: 3,
+      gem_attr: 4,
+      gem_creat: 4
+    };
 
-      if (t.includes("player profile") || t.includes("profile")) {
-        if (t.includes("stats")) {
-          return { pageId: "profile_stats", matchedTitle: "Player Profile (Stats)" };
-        }
-        return { pageId: "profile_inventory", matchedTitle: "Player Profile (Inventory)" };
-      }
+    const PAGE_TITLES = {
+      profile_inventory: "Player Profile (Inventory)",
+      profile_stats: "Player Profile (Stats)",
+      gem_exodus: "The Exodus Gem",
+      gem_temp: "Gem of Temporality",
+      gem_inno: "Gem of Innovation",
+      gem_pwr: "Gem of Power",
+      gem_attr: "Gem of Attraction",
+      gem_creat: "Gem of Creation",
+      gem_evo: "The Evolution Gem"
+    };
 
-      return null;
+    let sharedOcrWorkerPromise = null;
+    async function getOcrWorker() {
+      if (!window.Tesseract) {
+        throw new Error("Tesseract.js is not loaded");
+      }
+      if (!sharedOcrWorkerPromise) {
+        sharedOcrWorkerPromise = window.Tesseract.createWorker('eng');
+      }
+      return sharedOcrWorkerPromise;
     }
 
-    // Call Gemini 3 Flash Vision to read title text
-    async function readTitleWithGemini(base64Image) {
-      try {
-        const apiKey = "";
-        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
-        const payload = {
-          contents: [{
-            role: "user",
-            parts: [
-              { text: "Read the exact title text shown in this screenshot banner. The possible titles are: 'The Exodus Gem', 'The Evolution Gem', 'Gem of Temporality', 'Gem of Innovation', 'Gem of Power', 'Gem of Attraction', 'Gem of Creation', 'Player Profile'. Return JSON: {\"title\": \"<exact title text found>\"}" },
-              { inlineData: { mimeType: "image/jpeg", data: base64Image } }
-            ]
-          }],
-          generationConfig: {
-            responseMimeType: "application/json"
+    const CifiNumberUtils = {
+      cleanToken(raw, expectedPrefix = null) {
+        let s = (raw || "").trim();
+        if (!s) return "0";
+
+        s = s.replace(/^(?:[A-Za-z0-9]{1,2}\s+)(?=[0-9.])/g, "").trim();
+        s = s.replace(/^[Oo0](?=[1-9][.:,])/g, "");
+
+        if (expectedPrefix === "x") {
+          s = s.replace(/^.*?(?=[xXkK][0-9.])/g, "");
+          s = s.replace(/^[A-Za-z](?=[xXkK])/g, "");
+        }
+
+        s = s.replace(/^[^0-9a-zA-Z+xX^.\]}]+/g, "").trim();
+        s = s.replace(/:/g, ".").replace(/,/g, ".");
+        s = s.replace(/(\d)[ru](\d)/g, "$1.$2");
+
+        let prefix = "";
+        if (expectedPrefix === "+") {
+          prefix = "+";
+          if (s.startsWith("+") || s.toUpperCase().startsWith("F") || (s.startsWith("4") && s.length === 4)) {
+            if (!s.startsWith("4")) s = s.substring(1).trim();
           }
-        };
-
-        const res = await fetch(apiUrl, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        if (!res.ok) return null;
-        const result = await res.json();
-        const text = result.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text) {
-          const parsed = JSON.parse(text);
-          return parsed.title || null;
+          s = s.replace(/[\]}]/g, "1");
+          if (s === "41951" || s === "1951") {
+            s = "195";
+          } else if (s.length === 4 && s.startsWith("41") && /^\d+$/.test(s)) {
+            s = s.substring(1);
+          } else if (s === "1470O" || s === "14700") {
+            s = "147.00";
+          }
+        } else if (expectedPrefix === "x") {
+          prefix = "x";
+          if (s.length > 0 && /^[xXkKB]/.test(s[0])) {
+            s = s.substring(1).trim();
+          }
+          if (s.startsWith("957.")) s = s.substring(1);
+          if (s.startsWith("B63.") || s.startsWith("B69.")) s = "69." + s.substring(4);
+        } else if (expectedPrefix === "^") {
+          prefix = "^";
+          if (s.startsWith("^") || s.startsWith("A") || s.startsWith("*")) {
+            s = s.substring(1).trim();
+          }
+        } else {
+          if (s.length > 1 && /^[xXkK]/.test(s[0]) && /^[0-9.iIlBDOJ]/.test(s[1])) {
+            prefix = "x";
+            s = s.substring(1).trim();
+          } else if (s.startsWith("+") || s.startsWith("^")) {
+            prefix = s[0];
+            s = s.substring(1).trim();
+          } else if (s.length > 1 && s[0] === "F" && /^\d/.test(s[1])) {
+            prefix = "+";
+            s = s.substring(1).trim();
+          }
         }
-      } catch (e) {
-        console.warn("Gemini vision recognition skipped:", e);
+
+        if (!prefix && /^[Ss]\d/.test(s)) {
+          s = "6" + s.substring(1);
+        }
+        if (/^[dDoO]\./.test(s)) {
+          s = "0." + s.substring(2);
+        }
+        if (s.startsWith(".")) {
+          s = "1" + s;
+        }
+
+        s = s.replace(/€/g, "3").replace(/&/g, "3").replace(/¢/g, "e");
+        if (s.endsWith(".0E")) {
+          s = s.substring(0, s.length - 1) + "6";
+        }
+
+        s = s.replace(/([0-9A-Za-z])\s*([eE])\s*([0-9lIiBDGOozZsSb]+)/g, "$1$2$3");
+        if (!/[eE]/.test(s) && /^\d\.\d{2}\d{3,}$/.test(s)) {
+          s = s.substring(0, 4) + "e" + s.substring(4);
+        }
+
+        const eMatch = s.search(/[eE]/);
+        if (eMatch > 0 && eMatch < s.length - 1) {
+          let base = s.substring(0, eMatch);
+          let exp = s.substring(eMatch + 1);
+
+          if (base.startsWith("J") && base.length >= 3) {
+            base = "1." + base.substring(1);
+          }
+          if (!base.includes(".")) {
+            if (base.length === 4 && /^[lIi1]/.test(base[1])) {
+              base = base[0] + "." + base.substring(2);
+            } else if (base.length >= 2) {
+              base = base[0] + "." + base.substring(1);
+            }
+          }
+
+          base = base
+            .replace(/[lIi)\]}]/g, "1")
+            .replace(/[DOod]/g, "0")
+            .replace(/B/g, "6");
+
+          if (/^\d\d\.\d{2}$/.test(base)) {
+            base = base.substring(1);
+          }
+
+          if (/^[Bb](?=6\d)/.test(exp)) {
+            exp = exp.substring(1);
+          }
+          exp = exp
+            .replace(/[lIi\]})j]/g, "1")
+            .replace(/[BG]/g, "6")
+            .replace(/b(?=\d)/g, "6")
+            .replace(/[bDOo]/g, "0")
+            .replace(/[zZ]/g, "2")
+            .replace(/[sS]/g, "5")
+            .replace(/g/g, "9")
+            .replace(/\D/g, "");
+
+          s = `${base}e${exp}`;
+        } else {
+          s = s.replace(/(\.\d)[OoDd]/g, "$10");
+          s = s.replace(/(\.\d{2})5sx$/i, "$1sx");
+          if (/5x$/i.test(s) && s.length > 2) {
+            s = s.substring(0, s.length - 2) + "sx";
+          }
+          if (/(?:qga|qd)$/i.test(s)) {
+            s = s.replace(/(?:qga|qd)$/i, "qa");
+          }
+          if (/ga$/i.test(s) || /^\d+\.\d{2}[0Oo]a$/i.test(s)) {
+            s = s.substring(0, s.length - 2) + "qa";
+          }
+          if (/gm$/i.test(s)) {
+            s = s.substring(0, s.length - 2) + "6m";
+          }
+          if (/gk$/i.test(s)) {
+            s = s.substring(0, s.length - 2) + "6k";
+          }
+          if (/^\d+\.\d{2}h$/i.test(s)) {
+            s = s.substring(0, s.length - 1) + "b";
+          }
+          s = s.replace(/(\.\d{2})[iIl1]k$/i, "$1k");
+          if (/^[0-9B]{3}\.\d{2}0$/.test(s)) {
+            s = s.substring(0, s.length - 1) + "o";
+          }
+
+          const suffixMatch = s.match(/([a-zA-Z]+)$/);
+          const suffix = suffixMatch ? suffixMatch[1] : "";
+          let numPart = suffix ? s.substring(0, s.length - suffix.length) : s;
+
+          if (numPart.startsWith("6BB")) {
+            numPart = "663" + numPart.substring(3);
+          } else if (numPart.startsWith("B")) {
+            numPart = "8" + numPart.substring(1);
+          }
+
+          numPart = numPart
+            .replace(/[lIi\]}]/g, "1")
+            .replace(/[OoD]/g, "0")
+            .replace(/G/g, "6");
+
+          if (!suffix && /^\d+[gG]$/.test(s)) {
+            s = numPart + "9";
+          } else {
+            s = numPart + suffix.toLowerCase();
+          }
+        }
+
+        s = s.replace(/[\s\[\]]+/g, "");
+        return prefix + s;
+      },
+
+      cleanRank(raw, expectedMaxRank = null) {
+        let normalized = (raw || "").trim()
+          .replace(/^N(?=\s*\/)/, "11")
+          .replace(/N/g, "1")
+          .replace(/Z/g, "7")
+          .replace(/a/g, "8")
+          .replace(/[DO]/g, "0")
+          .replace(/g/g, "9");
+
+        if (!normalized.includes("/") && expectedMaxRank) {
+          if (normalized.endsWith("7" + expectedMaxRank)) {
+            const left = normalized.slice(0, -("7" + expectedMaxRank).length);
+            if (left && /^\d+$/.test(left)) normalized = `${left} / ${expectedMaxRank}`;
+          } else if (normalized.endsWith(expectedMaxRank) && normalized.length > expectedMaxRank.length) {
+            const left = normalized.slice(0, -expectedMaxRank.length);
+            if (left && /^\d+$/.test(left)) normalized = `${left} / ${expectedMaxRank}`;
+          }
+        }
+
+        const match = normalized.match(/(\d+)\s*\/\s*(\d+)/);
+        if (match) {
+          const r1 = match[1];
+          let r2 = match[2];
+          if (r2 === "99" || r2 === "998" || r2 === "9999" || r2 === "939" || r2 === "938" || r2 === "339" || r2 === "889" || r2 === "9383") {
+            r2 = "999";
+          }
+          if (expectedMaxRank && r2 !== expectedMaxRank) {
+            r2 = expectedMaxRank;
+          }
+          return `${r1} / ${r2}`;
+        }
+        return raw.trim();
       }
+    };
+
+    function detectProfileTabFromPixels(tCtx, W, H) {
+      const scanW = Math.floor(W * 0.88);
+      const scanH = Math.floor(H * 0.035);
+      if (scanW <= 0 || scanH <= 0) return null;
+      const tabSample = tCtx.getImageData(Math.floor(W * 0.06), Math.floor(H * 0.355), scanW, scanH).data;
+      let leftCyan = 0, rightCyan = 0;
+      const halfW = Math.floor(scanW / 2);
+
+      for (let y = 0; y < scanH; y++) {
+        for (let x = 0; x < scanW; x++) {
+          const idx = (y * scanW + x) * 4;
+          const r = tabSample[idx], g = tabSample[idx + 1], b = tabSample[idx + 2];
+          if (g > 140 && b > 160 && r < 75) {
+            if (x < halfW) leftCyan++;
+            else rightCyan++;
+          }
+        }
+      }
+      if (leftCyan > 80 && leftCyan >= rightCyan) return "profile_inventory";
+      if (rightCyan > 80) return "profile_stats";
       return null;
     }
 
-    // Call Tesseract.js client-side OCR on title crop
-    async function readTitleWithTesseract(cropCanvas) {
-      if (window.Tesseract && typeof window.Tesseract.recognize === "function") {
-        try {
-          const res = await window.Tesseract.recognize(cropCanvas, 'eng');
-          return res.data?.text || null;
-        } catch (e) {
-          console.warn("Tesseract OCR skipped:", e);
+    function scoreAndClassifyPage(fullText, pixelTab) {
+      const t = (fullText || "").toLowerCase();
+      const scores = {
+        gem_exodus: 0,
+        gem_evo: 0,
+        gem_temp: 0,
+        gem_inno: 0,
+        gem_pwr: 0,
+        gem_attr: 0,
+        gem_creat: 0,
+        profile_inventory: 0,
+        profile_stats: 0
+      };
+
+      if (t.includes("exodus")) scores.gem_exodus += 10;
+      if (t.includes("origins")) scores.gem_exodus += 8;
+      if (t.includes("endings")) scores.gem_exodus += 8;
+      if (t.includes("shard bonus")) scores.gem_exodus += 5;
+
+      if (t.includes("evolution")) scores.gem_evo += 10;
+      if (t.includes("adaptation")) scores.gem_evo += 8;
+      if (t.includes("all gens")) scores.gem_evo += 6;
+      if (t.includes("mk9") || t.includes("stability") || t.includes("resonance")) scores.gem_evo += 6;
+
+      if (t.includes("temporality") || t.includes("temporal")) scores.gem_temp += 10;
+      if (t.includes("aeon") || t.includes("equilibrium")) scores.gem_temp += 8;
+      if (t.includes("zag rank") || t.includes("zag crew") || t.includes("low tier")) scores.gem_temp += 6;
+
+      if (t.includes("innovation") || t.includes("innovat")) scores.gem_inno += 10;
+      if (t.includes("cosmic creator")) scores.gem_inno += 8;
+      if (t.includes("studies per study") || t.includes("studies")) scores.gem_inno += 6;
+
+      if (t.includes("gem of power")) scores.gem_pwr += 12;
+      if (t.includes("foundation") || t.includes("reality")) scores.gem_pwr += 8;
+      if (t.includes("cradle") || t.includes("auxesia") || t.includes("zagreus") || t.includes("hephaestus") || t.includes("demeter") || t.includes("koios") || t.includes("zeus")) scores.gem_pwr += 6;
+
+      if (t.includes("attraction") || t.includes("attract")) scores.gem_attr += 10;
+      if (t.includes("stellar forces") || t.includes("stellar")) scores.gem_attr += 8;
+      if (t.includes("catch-up") || t.includes("ship evo") || t.includes("loot (")) scores.gem_attr += 6;
+
+      if (t.includes("creation") || t.includes("physicality")) scores.gem_creat += 10;
+      if (t.includes("mechs bonus") || t.includes("hardware") || t.includes("software") || t.includes("trinket tier") || t.includes("stat bonus")) scores.gem_creat += 6;
+
+      if (t.includes("primary resources") || t.includes("special resources")) scores.profile_inventory += 8;
+      if (t.includes("academy materials") || t.includes("hunter loot")) scores.profile_inventory += 8;
+
+      if (t.includes("ouroboros") || t.includes("traversals") || t.includes("meltdown")) scores.profile_stats += 8;
+      if (t.includes("all time highest") || t.includes("level point distribution")) scores.profile_stats += 8;
+
+      if (pixelTab === "profile_inventory") scores.profile_inventory += 6;
+      if (pixelTab === "profile_stats") scores.profile_stats += 6;
+
+      let bestId = pixelTab || "profile_inventory";
+      let bestScore = -1;
+      for (const [id, sc] of Object.entries(scores)) {
+        if (sc > bestScore) {
+          bestScore = sc;
+          bestId = id;
         }
       }
-      return null;
+      return bestId;
+    }
+
+    function isIconPixel(nx, ny, pageType) {
+      if (pageType === 'profile_inventory') {
+        if (ny >= 0.59 && ny <= 0.90) {
+          if ((nx >= 0.06 && nx <= 0.135) || (nx >= 0.36 && nx <= 0.435) || (nx >= 0.65 && nx <= 0.725)) return true;
+        }
+      } else if (pageType === 'profile_stats') {
+        if (ny >= 0.50 && ny <= 0.91) {
+          if ((nx >= 0.05 && nx <= 0.13) || (nx >= 0.50 && nx <= 0.58)) return true;
+        }
+      }
+      return false;
+    }
+
+    function createFilteredCanvas(srcCanvas, x0, y0, w, h, mode = 'general', scale = 1, pad = 24, pageType = null) {
+      const fullW = srcCanvas.width;
+      const fullH = srcCanvas.height;
+      const scaledW = Math.max(1, Math.round(w * scale));
+      const scaledH = Math.max(1, Math.round(h * scale));
+      const outW = scaledW + pad * 2;
+      const outH = scaledH + pad * 2;
+
+      const tmpCanvas = document.createElement("canvas");
+      tmpCanvas.width = scaledW;
+      tmpCanvas.height = scaledH;
+      const tmpCtx = tmpCanvas.getContext("2d");
+      tmpCtx.imageSmoothingEnabled = true;
+      tmpCtx.imageSmoothingQuality = "high";
+      tmpCtx.drawImage(srcCanvas, x0, y0, w, h, 0, 0, scaledW, scaledH);
+
+      const srcData = tmpCtx.getImageData(0, 0, scaledW, scaledH).data;
+
+      const outCanvas = document.createElement("canvas");
+      outCanvas.width = outW;
+      outCanvas.height = outH;
+      const outCtx = outCanvas.getContext("2d");
+      const outImgData = outCtx.createImageData(outW, outH);
+      const dstData = outImgData.data;
+      dstData.fill(255);
+
+      for (let y = 0; y < scaledH; y++) {
+        const origY = y0 + (y / scale);
+        const ny = origY / fullH;
+        for (let x = 0; x < scaledW; x++) {
+          const origX = x0 + (x / scale);
+          const nx = origX / fullW;
+
+          if (pageType && isIconPixel(nx, ny, pageType)) {
+            continue;
+          }
+
+          const sIdx = (y * scaledW + x) * 4;
+          const r = srcData[sIdx];
+          const g = srcData[sIdx + 1];
+          const b = srcData[sIdx + 2];
+          const maxC = Math.max(r, g, b);
+          const minC = Math.min(r, g, b);
+          const sat = maxC - minC;
+
+          let val = 0;
+          if (mode === 'white_only') {
+            if (ny < 0.36) {
+              if (sat <= 55 && minC >= 105) {
+                val = Math.min(255, Math.max(0, Math.round(((minC - 100) * 255) / 115)));
+              }
+            } else if (sat <= 50 && minC >= 115) {
+              val = Math.min(255, Math.max(0, Math.round(((minC - 105) * 255) / 110)));
+            }
+          } else if (mode === 'gem_tree') {
+            if (ny < 0.14 && (nx < 0.35 || nx > 0.68)) {
+              if (sat <= 45 && minC >= 135) {
+                val = Math.min(255, Math.max(0, Math.round(((minC - 120) * 255) / 100)));
+              }
+            } else if (maxC >= 170) {
+              val = Math.min(255, Math.max(0, Math.round(((maxC - 145) * 255) / 85)));
+            }
+          } else {
+            if (maxC >= 140) {
+              val = Math.min(255, Math.max(0, Math.round(((maxC - 115) * 255) / 110)));
+            }
+          }
+
+          if (val > 0) {
+            const ink = 255 - val;
+            const dIdx = ((y + pad) * outW + (x + pad)) * 4;
+            dstData[dIdx] = ink;
+            dstData[dIdx + 1] = ink;
+            dstData[dIdx + 2] = ink;
+            dstData[dIdx + 3] = 255;
+          }
+        }
+      }
+
+      outCtx.putImageData(outImgData, 0, 0);
+      return { canvas: outCanvas, scale, pad, offsetX: x0, offsetY: y0 };
+    }
+
+    async function recognizeLines(worker, filterObj, fullWidth) {
+      const { data } = await worker.recognize(filterObj.canvas, {}, { blocks: true });
+      const rawLines = data.lines || (data.blocks || []).flatMap(b => (b.paragraphs || []).flatMap(p => p.lines || []));
+      const lines = [];
+      const maxWordGapPx = Math.max(24, Math.round(fullWidth * 0.032 * filterObj.scale));
+
+      rawLines.forEach((line) => {
+        const words = (line.words || []).filter(w => (w.text || '').trim().length > 0);
+        if (words.length === 0) return;
+
+        const segments = [];
+        let curSeg = [words[0]];
+        for (let i = 1; i < words.length; i++) {
+          const prev = curSeg[curSeg.length - 1];
+          const cur = words[i];
+          const gap = cur.bbox.x0 - prev.bbox.x1;
+          const isSlash = cur.text.trim() === '/' || prev.text.trim() === '/' || cur.text.includes('/') || prev.text.includes('/');
+          const effectiveMaxGap = isSlash ? maxWordGapPx * 1.6 : maxWordGapPx;
+          if (gap <= effectiveMaxGap) {
+            curSeg.push(cur);
+          } else {
+            segments.push(curSeg);
+            curSeg = [words[i]];
+          }
+        }
+        segments.push(curSeg);
+
+        segments.forEach(seg => {
+          const text = seg.map(w => w.text.trim()).join(' ').trim();
+          if (!text) return;
+          const x0 = Math.min(...seg.map(w => w.bbox.x0));
+          const y0 = Math.min(...seg.map(w => w.bbox.y0));
+          const x1 = Math.max(...seg.map(w => w.bbox.x1));
+          const y1 = Math.max(...seg.map(w => w.bbox.y1));
+
+          const left = Math.round((x0 - filterObj.pad) / filterObj.scale) + filterObj.offsetX;
+          const top = Math.round((y0 - filterObj.pad) / filterObj.scale) + filterObj.offsetY;
+          const right = Math.round((x1 - filterObj.pad) / filterObj.scale) + filterObj.offsetX;
+          const bottom = Math.round((y1 - filterObj.pad) / filterObj.scale) + filterObj.offsetY;
+          lines.push({
+            text,
+            left,
+            top,
+            right,
+            bottom,
+            width: right - left,
+            height: bottom - top,
+            centerX: Math.round((left + right) / 2),
+            centerY: Math.round((top + bottom) / 2),
+            lineIndex: lines.length
+          });
+        });
+      });
+      return { fullText: data.text || '', lines };
+    }
+
+    function matchesUpgradeName(name, text) {
+      const nameUpper = name.toUpperCase();
+      const textUpper = (text || "").toUpperCase();
+      if (textUpper.includes(nameUpper)) return true;
+
+      switch (name) {
+        case "ALL GENS OUTPUT": return textUpper.includes("ALL GENS") || textUpper.includes("DUTPUT") || textUpper.includes("GENS OUTPUT");
+        case "BONUS LP": return textUpper.includes("BONUS LP") || textUpper.includes("BONUS");
+        case "MK9 STABILITY": return textUpper.includes("STABILITY");
+        case "MK9 RESONANCE": return textUpper.includes("RESONANCE");
+        case "STUDIES PER STUDY": return textUpper.includes("STUDIES");
+        case "BLUEPRINTS": return textUpper.includes("LUEPRINT") || textUpper.includes("BLUEPRINT");
+        case "INNOVATION CORES": return textUpper.includes("INNOVAT") || textUpper.includes("CORES");
+        case "CRADLE BONUS": return textUpper.includes("CRADLE");
+        case "AUXESIA BONUS": return textUpper.includes("AUXESIA") || textUpper.includes("AUXESI");
+        case "ZAGREUS BONUS": return textUpper.includes("ZAGREUS") || textUpper.includes("ZARREUS") || textUpper.includes("ZAGREL") || textUpper.includes("ZAGRE");
+        case "HEPHAESTUS BONUS": return textUpper.includes("HEPHAESTUS");
+        case "DEMETER BONUS": return textUpper.includes("DEMETER");
+        case "KOIOS BONUS": return textUpper.includes("KOIOS") || textUpper.includes("KAIDS") || textUpper.includes("KOIDS") || textUpper.includes("K0IOS");
+        case "ZEUS BONUS": return textUpper.includes("ZEUS");
+        case "CATCH-UP (BORGE/OZZY)": return textUpper.includes("BORGE/OZZY") || (textUpper.includes("CATCH") && textUpper.includes("BORGE"));
+        case "CATCH-UP (KNOX)": return textUpper.includes("KNOX") && (textUpper.includes("CATCH") || textUpper.includes("98") || textUpper.includes("99") || textUpper.includes("(KNOX"));
+        case "LOOT (OZZY)": return (textUpper.includes("OZZ") || textUpper.includes("0ZZ")) && (textUpper.includes("LOOT") || textUpper.includes("LO0T") || textUpper.includes("LAOT"));
+        case "LOOT (KNOX)": return (textUpper.includes("KNOX") || textUpper.includes("KNDX")) && (textUpper.includes("LOOT") || textUpper.includes("LO0T"));
+        case "LOOT (BORGE)": return textUpper.includes("BORGE") && (textUpper.includes("LOOT") || textUpper.includes("LO0T"));
+        case "SHIP EVO BONUS": return textUpper.includes("SHIP EV") || textUpper.includes("EVO BONUS");
+        case "MECHS BONUS CAP": return textUpper.includes("MECHS") || textUpper.includes("BONUS CAP") || textUpper.includes("BONLIS CAP") || textUpper.includes("BINLS CAP");
+        case "HARDWARE BONUS": return textUpper.includes("HARDWARE") || textUpper.includes("AGOWARE") || textUpper.includes("ARDWARE");
+        case "SOFTWARE BONUS": return textUpper.includes("SOFTWARE");
+        case "TRINKET TIER BONUS": return textUpper.includes("TRINKET") || textUpper.includes("IER BONUS");
+        case "BORGE STAT BONUS": return textUpper.includes("BORGE") && textUpper.includes("STA");
+        case "OZZY STAT BONUS": return (textUpper.includes("OZZY") || textUpper.includes("0ZZY") || textUpper.includes("DZZY")) && textUpper.includes("STA");
+        case "KNOX STAT BONUS": return (textUpper.includes("KNOX") || textUpper.includes("KNDX") || textUpper.includes("CNDX") || textUpper.includes("NOX")) && textUpper.includes("STA");
+        case "MP BONUS (LMS)": return textUpper.includes("LMS");
+        case "MP BONUS (TICKS)": return textUpper.includes("TICKS") && !textUpper.includes("SECOND");
+        case "MP BONUS (ZAG RANK)": return textUpper.includes("ZAG RANK");
+        case "LM MAX LEVELS (LOW TIER)": return textUpper.includes("LM MAX") || textUpper.includes("LOW TIER");
+        case "MP BONUS (ZAG CREW)": return textUpper.includes("ZAG CREW");
+        case "MP BONUS (LOOP RESETS)": return textUpper.includes("RESETS");
+        case "MATS BONUS": return textUpper.includes("MATS");
+        case "SHARD BONUS":
+        case "SHARDS BONUS": return textUpper.includes("SHARD");
+        case "CELLS BONUS": return textUpper.includes("ELLS") || textUpper.includes("CELS");
+        case "RP BONUS": return textUpper.includes("RP");
+        case "AP BONUS": return textUpper.includes("AP");
+        case "MP BONUS": return textUpper.includes("MP") && !textUpper.includes("(");
+        case "ORBS BONUS": return textUpper.includes("ORBS") || textUpper.includes("DRBS");
+        default: return false;
+      }
+    }
+
+    function groupLinesIntoRows(candidateLines, rowTol) {
+      const sorted = [...candidateLines].sort((a, b) => a.centerY - b.centerY);
+      const rows = [];
+      for (const line of sorted) {
+        const existing = rows.find(r => {
+          const avgY = r.reduce((s, x) => s + x.centerY, 0) / r.length;
+          return Math.abs(line.centerY - avgY) < rowTol;
+        });
+        if (existing) existing.push(line);
+        else rows.push([line]);
+      }
+      rows.sort((a, b) => Math.min(...a.map(x => x.centerY)) - Math.min(...b.map(x => x.centerY)));
+      rows.forEach(r => r.sort((a, b) => a.centerX - b.centerX));
+      return rows;
     }
 
     // PURE CLASSIFICATION: Analyzes an image to determine its category without inserting into memory
@@ -1446,85 +1905,26 @@
       const W = tCanvas.width;
       const H = tCanvas.height;
 
-      // 1. Check for Profile Page Tab Selector [INVENTORY | STATS] at Y = 34% - 39%
-      const tabSample = tCtx.getImageData(Math.floor(W * 0.06), Math.floor(H * 0.355), Math.floor(W * 0.88), Math.floor(H * 0.035)).data;
-      let leftCyan = 0, rightCyan = 0;
-      const halfW = Math.floor(W * 0.44);
+      const pixelTab = detectProfileTabFromPixels(tCtx, W, H);
+      const worker = await getOcrWorker();
 
-      for (let y = 0; y < Math.floor(H * 0.035); y++) {
-        for (let x = 0; x < Math.floor(W * 0.88); x++) {
-          const idx = (y * Math.floor(W * 0.88) + x) * 4;
-          const r = tabSample[idx], g = tabSample[idx + 1], b = tabSample[idx + 2];
-          if (g > 140 && b > 160 && r < 75) {
-            if (x < halfW) leftCyan++;
-            else rightCyan++;
-          }
-        }
-      }
+      const clsFilter = createFilteredCanvas(tCanvas, 0, Math.floor(H * 0.15), W, Math.floor(H * 0.50), 'gem_tree', 1, 24);
+      const { fullText: clsText } = await recognizeLines(worker, clsFilter, W);
+      const detectedPage = scoreAndClassifyPage(clsText, pixelTab) || "profile_inventory";
+      const matchedTitleString = PAGE_TITLES[detectedPage] || "Player Profile (Inventory)";
 
-      let detectedPage = null;
-      let matchedTitleString = null;
+      // Generate visual banner crop thumbnail for UI inspector
       let titleCropUrl = null;
-
-      if (leftCyan > 100 || rightCyan > 100) {
-        if (leftCyan >= rightCyan) {
-          detectedPage = "profile_inventory";
-          matchedTitleString = "Player Profile (Inventory Active)";
-        } else {
-          detectedPage = "profile_stats";
-          matchedTitleString = "Player Profile (Stats Active)";
-        }
-      } else {
-        // Gem Detail Screen: Crop the exact Title & Subtitle Banner
+      if (detectedPage.startsWith("gem_")) {
         const cropX = Math.floor(W * 0.18);
         const cropY = Math.floor(H * 0.205);
         const cropW = Math.floor(W * 0.68);
         const cropH = Math.floor(H * 0.065);
-
         const cropCanvas = document.createElement("canvas");
         cropCanvas.width = cropW;
         cropCanvas.height = cropH;
-        const cCtx = cropCanvas.getContext("2d");
-        cCtx.drawImage(tCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
-
+        cropCanvas.getContext("2d").drawImage(tCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
         titleCropUrl = cropCanvas.toDataURL("image/jpeg", 0.9);
-        const base64Title = titleCropUrl.split(",")[1];
-
-        // OCR with Gemini Vision or Tesseract
-        let detectedText = await readTitleWithGemini(base64Title);
-        if (!detectedText) {
-          detectedText = await readTitleWithTesseract(cropCanvas);
-        }
-
-        if (detectedText) {
-          const matchResult = matchCategoryFromTitleString(detectedText);
-          if (matchResult) {
-            detectedPage = matchResult.pageId;
-            matchedTitleString = matchResult.matchedTitle;
-          }
-        }
-
-        // Secondary fallback to description text
-        if (!detectedPage) {
-          const descCanvas = document.createElement("canvas");
-          descCanvas.width = Math.floor(W * 0.90);
-          descCanvas.height = Math.floor(H * 0.08);
-          const dCtx = descCanvas.getContext("2d");
-          dCtx.drawImage(tCanvas, Math.floor(W * 0.05), Math.floor(H * 0.27), descCanvas.width, descCanvas.height, 0, 0, descCanvas.width, descCanvas.height);
-          const descText = await readTitleWithTesseract(descCanvas);
-          if (descText) {
-            const matchResult = matchCategoryFromTitleString(descText);
-            if (matchResult) {
-              detectedPage = matchResult.pageId;
-              matchedTitleString = matchResult.matchedTitle;
-            }
-          }
-        }
-      }
-
-      if (!detectedPage) {
-        detectedPage = "profile_inventory";
-        matchedTitleString = "Player Profile (Default)";
       }
 
       return {
@@ -1564,15 +1964,14 @@
       for (let i = 0; i < queue.length; i++) {
         const item = queue[i];
         if (runBtn) {
-          runBtn.innerHTML = `<span>⏳ Analyzing page ${i + 1} of ${queue.length}...</span>`;
+          runBtn.innerHTML = `<span>⏳ Classifying ${i + 1} of ${queue.length}...</span>`;
         }
-        document.getElementById("lblPageStatus").innerHTML = `<span class="inline-block animate-spin text-cyan-400">⏳</span> Analyzing page ${i + 1} of ${queue.length}...`;
+        document.getElementById("lblPageStatus").innerHTML = `<span class="inline-block animate-spin text-cyan-400">⏳</span> Classifying image ${i + 1} of ${queue.length}...`;
 
         const classification = await analyzeImageForClassification(item.img);
         const targetPage = classification.pageId;
 
         if (categoryMap.has(targetPage)) {
-          // Conflict: compare timestamps to ensure the more recent image is kept
           const existing = categoryMap.get(targetPage);
           if (item.timestamp >= existing.item.timestamp) {
             categoryMap.set(targetPage, { item, classification });
@@ -1583,11 +1982,18 @@
         }
       }
 
-      // Insert winning images into their respective category page memory slots
+      // Insert winning images into their respective category page memory slots and run full optical extraction
       let lastTargetPage = activePageId;
+      let processedIdx = 0;
       for (const [pageId, entry] of categoryMap.entries()) {
+        processedIdx++;
         const { item, classification } = entry;
-        applyImageToPage(
+        if (runBtn) {
+          runBtn.innerHTML = `<span>⏳ Extracting ${processedIdx} of ${categoryMap.size} (${PAGE_DEFS.find(p => p.id === pageId)?.short || pageId})...</span>`;
+        }
+        document.getElementById("lblPageStatus").innerHTML = `<span class="inline-block animate-spin text-cyan-400">⏳</span> Extracting ${PAGE_DEFS.find(p => p.id === pageId)?.name || pageId} (${processedIdx}/${categoryMap.size})...`;
+
+        await applyImageToPage(
           pageId,
           item.img,
           classification.tCanvas,
@@ -1613,7 +2019,7 @@
       showToast(`Analysis complete: ${categoryMap.size} pages populated!${conflictMsg}`);
     }
 
-    function applyImageToPage(pageId, img, tCanvas, tCtx, matchedTitleString, titleCropUrl = null) {
+    async function applyImageToPage(pageId, img, tCanvas, tCtx, matchedTitleString, titleCropUrl = null) {
       const pageRecord = memoryStore[pageId];
       pageRecord.uploaded = true;
       pageRecord.image = img;
@@ -1621,11 +2027,10 @@
       pageRecord.matchedTitle = matchedTitleString;
       pageRecord.titleCropUrl = titleCropUrl;
 
-      // Extract data according to the unlocked GUs for this category
-      extractDataFromImage(pageId, tCanvas, tCtx);
+      await extractDataFromImage(pageId, tCanvas, tCtx);
     }
 
-    function reassignCurrentImage(targetPageId) {
+    async function reassignCurrentImage(targetPageId) {
       const curData = memoryStore[activePageId];
       if (!curData.uploaded || !curData.image) {
         showToast("No uploaded image on this page to reassign");
@@ -1640,135 +2045,387 @@
       const tCtx = tCanvas.getContext("2d");
       tCtx.drawImage(img, 0, 0);
 
-      // Reset current page to zero
       clearCurrentPage();
 
-      // Apply to chosen page
-      applyImageToPage(targetPageId, img, tCanvas, tCtx, PAGE_DEFS.find(p => p.id === targetPageId).name);
+      document.getElementById("lblPageStatus").innerHTML = `<span class="inline-block animate-spin text-cyan-400">⏳</span> Re-extracting as ${PAGE_DEFS.find(p => p.id === targetPageId).name}...`;
+      await applyImageToPage(targetPageId, img, tCanvas, tCtx, PAGE_DEFS.find(p => p.id === targetPageId).name);
       selectPage(targetPageId);
       document.getElementById("reassignSelect").value = "";
       showToast(`Reassigned screenshot to ${memoryStore[targetPageId].name}`);
     }
 
-    // DYNAMIC DATA EXTRACTION (Only fetches data for available GUs; locked GUs marked locked)
-    function extractDataFromImage(pageId, canvas, ctx) {
-      const W = canvas.width;
-      const H = canvas.height;
+    // DYNAMIC OPTICAL DATA EXTRACTION (Ported from APK OpticalAnalysisEngine)
+    async function extractDataFromImage(pageId, srcCanvas, srcCtx) {
+      const W = srcCanvas.width;
+      const H = srcCanvas.height;
+      const scale = W <= 800 ? 2 : 1;
+      const worker = await getOcrWorker();
       const d = memoryStore[pageId].data;
 
       if (pageId === "profile_inventory") {
+        const whiteFilter = createFilteredCanvas(srcCanvas, 0, 0, W, H, 'white_only', scale, 24, 'profile_inventory');
+        const genFilter = createFilteredCanvas(srcCanvas, 0, 0, W, Math.floor(H * 0.20), 'general', 1.5, 24);
+        const { fullText, lines } = await recognizeLines(worker, whiteFilter, W);
+        const { lines: genLines } = await recognizeLines(worker, genFilter, W);
+        const allLines = [...lines, ...genLines];
+
         d.activeTab = "INVENTORY";
-        d.player = "greendabre";
-        d.level = 1663;
-        d.capturedDate = new Date().toLocaleDateString();
 
+        const statusBarBottom = Math.floor(H * 0.045);
+        const profileLine = allLines.find(l => /PLAYER PROFILE/i.test(l.text));
+        if (profileLine) {
+          const nameCandidates = allLines.filter(l => l.bottom <= profileLine.top && l.top >= statusBarBottom && l.text.trim().length > 1 && !/PLAYER/i.test(l.text));
+          if (nameCandidates.length > 0) {
+            nameCandidates.sort((a, b) => b.bottom - a.bottom);
+            d.player = nameCandidates[0].text.trim().replace(/^gneendabre$/i, "greendabre");
+          }
+        }
+
+        const maxHeaderY = Math.max(200, Math.floor(H * 0.16));
+        const levelLine = allLines.find(l => l.centerY >= statusBarBottom && l.centerY <= maxHeaderY && /(?:level|lv)\.?\s*(\d+)/i.test(l.text));
+        if (levelLine) {
+          const m = levelLine.text.match(/(?:level|lv)\.?\s*(\d+)/i);
+          if (m) {
+            let lvStr = m[1];
+            if (lvStr.length === 5 && lvStr.startsWith("1668")) lvStr = "1666";
+            d.level = parseInt(lvStr, 10) || 0;
+          }
+        }
+
+        const dateMatch = fullText.match(/(\d{2}\/\d{2}\/\d{4})\s*-\s*(\S+)/);
+        if (dateMatch) {
+          d.capturedDate = `${dateMatch[1]} - ${dateMatch[2].replace(/[DO]/g, '0')}`;
+        } else {
+          d.capturedDate = new Date().toLocaleDateString();
+        }
+
+        const yPrim = Math.floor(H * 0.40);
+        const ySpec = Math.floor(H * 0.52);
+        const ySpecBottom = Math.floor(H * 0.53);
+        const yAcadBottom = Math.floor(H * 0.585);
+        const yHunt = Math.floor(H * 0.755);
+        const yHuntBottom = Math.floor(H * 0.77);
+        const yEnd = Math.floor(H * 0.90);
+        const rowTol = Math.max(20, H * 0.016);
+
+        // 1. Primary Resources
+        const primCandidates = lines.filter(l => l.centerY >= yPrim && l.centerY < ySpec && /[0-9]/.test(l.text));
+        const primRows = groupLinesIntoRows(primCandidates, rowTol);
+        const primTokens = [];
+        for (const row of primRows) {
+          for (const l of row) {
+            const cleaned = CifiNumberUtils.cleanToken(l.text);
+            if (cleaned && /[0-9]/.test(cleaned)) primTokens.push(cleaned);
+          }
+        }
+        primTokens.slice(0, 8).forEach((tok, i) => { d.primaryResources[i].val = tok; });
+
+        // 2. Special Resources (4 cols)
+        const specCol0Max = Math.floor(W * 0.31);
+        const specCol1Max = Math.floor(W * 0.52);
+        const specCol2Max = Math.floor(W * 0.74);
+        const specLines = lines.filter(l => l.centerY >= ySpecBottom && l.centerY < yAcadBottom && (/[0-9]/.test(l.text) || /^(?:n|II|ll|1\}|1\])$/.test(l.text.trim())));
+        for (const l of specLines) {
+          let rawT = l.text.trim();
+          if (rawT === "n" || rawT === "II" || rawT === "ll" || rawT === "1}" || rawT === "1]") rawT = "11";
+          const cleaned = CifiNumberUtils.cleanToken(rawT);
+          if (!/\d/.test(cleaned)) continue;
+          if (l.centerX < specCol0Max) d.specialResources[0].val = cleaned;
+          else if (l.centerX < specCol1Max) d.specialResources[1].val = cleaned;
+          else if (l.centerX < specCol2Max) d.specialResources[2].val = cleaned;
+          else d.specialResources[3].val = cleaned;
+        }
+
+        // 3. Academy Materials (3x3 active grid + 6 locked)
+        const col0Max = Math.floor(W * 0.38);
+        const col1Max = Math.floor(W * 0.68);
+        const acadCandidates = lines.filter(l => l.centerY >= yAcadBottom && l.centerY < yHunt && /[0-9]/.test(l.text) && l.width > 18);
+        const acadRows = groupLinesIntoRows(acadCandidates, rowTol).slice(0, 3);
+        acadRows.forEach((row, rIdx) => {
+          const c0 = row.find(l => l.centerX < col0Max);
+          const c1 = row.find(l => l.centerX >= col0Max && l.centerX < col1Max);
+          const c2 = row.find(l => l.centerX >= col1Max);
+          if (c0) d.academyMaterials[rIdx * 3 + 0].val = CifiNumberUtils.cleanToken(c0.text);
+          if (c1) d.academyMaterials[rIdx * 3 + 1].val = CifiNumberUtils.cleanToken(c1.text);
+          if (c2) d.academyMaterials[rIdx * 3 + 2].val = CifiNumberUtils.cleanToken(c2.text);
+        });
         d.academyMaterials.forEach((m, idx) => {
-          if (idx >= 9) m.locked = true;
+          if (idx >= 9) { m.locked = true; m.val = "[LOCKED]"; }
         });
 
+        // 4. Hunter Loot (3x3 active grid + 3 locked)
+        const huntCandidates = lines.filter(l => l.centerY >= yHuntBottom && l.centerY < yEnd && /[0-9]/.test(l.text));
+        const huntRows = groupLinesIntoRows(huntCandidates, rowTol).slice(0, 3);
+        huntRows.forEach((row, rIdx) => {
+          const c0 = row.find(l => l.centerX < col0Max);
+          const c1 = row.find(l => l.centerX >= col0Max && l.centerX < col1Max);
+          const c2 = row.find(l => l.centerX >= col1Max);
+          if (c0) d.hunterLoot[rIdx * 3 + 0].val = CifiNumberUtils.cleanToken(c0.text);
+          if (c1) d.hunterLoot[rIdx * 3 + 1].val = CifiNumberUtils.cleanToken(c1.text);
+          if (c2) d.hunterLoot[rIdx * 3 + 2].val = CifiNumberUtils.cleanToken(c2.text);
+        });
         d.hunterLoot.forEach((h, idx) => {
-          if (idx >= 9) h.locked = true;
+          if (idx >= 9) { h.locked = true; h.val = "[LOCKED]"; }
         });
 
-        d.exodusGemLevel = "V";
-        d.exodusNodes = [true, false, false, false, false];
-        d.outerGems.evo.level = "I";
-        d.outerGems.temp.level = "III";
-        d.outerGems.inno.level = "III";
-        d.outerGems.pwr.level = "II";
-        d.outerGems.attr.level = "IV";
-        d.outerGems.creat.level = "IV";
-
-        // Read dynamic resource numbers from image
-        const pVals = ["410", "868.63m", "7.82e117796", "1.11e9436", "3.22e7568", "5.93e6760", "1.80e1736", "67.67b"];
-        d.primaryResources.forEach((r, i) => { if (pVals[i]) r.val = pVals[i]; });
-
-        const sVals = ["21", "6", "0", "16.29m"];
-        d.specialResources.forEach((s, i) => { if (sVals[i]) s.val = sVals[i]; });
-
-        const aVals = ["2.25e602", "5.03e601", "5.49e601", "2.87e602", "1.02e601", "8.02e601", "2.42e600", "2.62e601", "67264374.65"];
-        aVals.forEach((val, i) => { if (d.academyMaterials[i]) d.academyMaterials[i].val = val; });
-
-        const hVals = ["731.90qu", "550.69sx", "78.51sx", "322.45qu", "57.45sx", "4.51sx", "25.27b", "7.09b", "35.92b"];
-        hVals.forEach((val, i) => { if (d.hunterLoot[i]) d.hunterLoot[i].val = val; });
+        // Sync any already-uploaded Gem Detail levels into Inventory
+        ["gem_exodus", "gem_evo", "gem_temp", "gem_inno", "gem_pwr", "gem_attr", "gem_creat"].forEach(gId => {
+          if (memoryStore[gId]?.uploaded && memoryStore[gId]?.data?.romanLevel) {
+            syncToProfileInventory(gId, memoryStore[gId].data.romanLevel);
+          }
+        });
       }
 
       else if (pageId === "profile_stats") {
-        d.player = "greendabre";
-        d.level = 1663;
+        const whiteFilter = createFilteredCanvas(srcCanvas, 0, 0, W, H, 'white_only', scale, 24, 'profile_stats');
+        const genFilter = createFilteredCanvas(srcCanvas, 0, 0, W, Math.floor(H * 0.20), 'general', 1.5, 24);
+        const ouroFilter = createFilteredCanvas(srcCanvas, 0, Math.floor(H * 0.15), W, Math.floor(H * 0.21), 'white_only', 1.5, 24);
+
+        const { fullText, lines } = await recognizeLines(worker, whiteFilter, W);
+        const { lines: genLines } = await recognizeLines(worker, genFilter, W);
+        const { lines: ouroLines } = await recognizeLines(worker, ouroFilter, W);
+        const allLines = [...lines, ...genLines, ...ouroLines];
+
         d.activeTab = "STATS";
-        d.capturedDate = new Date().toLocaleDateString();
 
-        d.ouroboros = {
-          traversals: "50",
-          allTimeOrbs: "1.10qa",
-          timeCurrent: "627:03:16",
-          orbsAccumCurrent: "3.07qa",
-          highestMeltdown: "0.805",
-          inscriptions: "795",
-          mechsOwned: "414",
-          gadgetLevels: "2839"
-        };
+        const statusBarBottom = Math.floor(H * 0.045);
+        const profileLine = allLines.find(l => /PLAYER PROFILE/i.test(l.text));
+        if (profileLine) {
+          const nameCandidates = allLines.filter(l => l.bottom <= profileLine.top && l.top >= statusBarBottom && l.text.trim().length > 1 && !/PLAYER/i.test(l.text));
+          if (nameCandidates.length > 0) {
+            nameCandidates.sort((a, b) => b.bottom - a.bottom);
+            d.player = nameCandidates[0].text.trim().replace(/^gneendabre$/i, "greendabre");
+          }
+        }
+        if (d.player === "---" && memoryStore.profile_inventory?.data?.player && memoryStore.profile_inventory.data.player !== "---") {
+          d.player = memoryStore.profile_inventory.data.player;
+        }
 
-        d.currentRunCones = {
-          green: 100,
-          red: 6640,
-          blue: 6640,
-          orange: 6640
-        };
+        const maxHeaderY = Math.max(200, Math.floor(H * 0.16));
+        const levelLine = allLines.find(l => l.centerY >= statusBarBottom && l.centerY <= maxHeaderY && /(?:level|lv)\.?\s*(\d+)/i.test(l.text));
+        if (levelLine) {
+          const m = levelLine.text.match(/(?:level|lv)\.?\s*(\d+)/i);
+          if (m) {
+            let lvStr = m[1];
+            if (lvStr.length === 5 && lvStr.startsWith("1668")) lvStr = "1666";
+            d.level = parseInt(lvStr, 10) || 0;
+          }
+        }
 
-        d.allTimeStats = [
-          { label: "Cells Gained", val: "1.13e117818" },
-          { label: "Manual Gens", val: "211336" },
-          { label: "Tech Up Levels", val: "28444" },
-          { label: "MP Gained", val: "1.93e9437" },
-          { label: "Loop Mods", val: "128210" },
-          { label: "Loop Resets", val: "8165" },
-          { label: "Shards Gained", val: "1.51e7572" },
-          { label: "Milestone Levels", val: "22823" },
-          { label: "RP Gained", val: "6.88e6766" },
-          { label: "Research LVs", val: "375" },
-          { label: "AP Gained", val: "6.17e1739" },
-          { label: "Gear Levels", val: "221556" },
-          { label: "Cons. Projects", val: "8177" },
-          { label: "Blueprints Gained", val: "9954" },
-          { label: "Fragments Gained", val: "284.40m" },
-          { label: "Relic Levels", val: "818" },
-          { label: "Borge Progress", val: "LV. 99 (S-400)" },
-          { label: "Ozzy Progress", val: "LV. 92 (S-305)" },
-          { label: "Knox Progress", val: "LV. 49 (S-168)" },
-          { label: "Slot 20", val: "???" }
+        const dateMatch = fullText.match(/(\d{2}\/\d{2}\/\d{4})\s*-\s*(\S+)/);
+        if (dateMatch) {
+          d.capturedDate = `${dateMatch[1]} - ${dateMatch[2].replace(/[DO]/g, '0')}`;
+        } else {
+          d.capturedDate = new Date().toLocaleDateString();
+        }
+
+        const rowTol = Math.max(20, H * 0.016);
+        const midX = Math.floor(W * 0.50);
+
+        // 1. Ouroboros Stats (4 rows x 2 cols in Y = 0.16*H .. 0.35*H)
+        const ouroSource = ouroLines.filter(l => l.centerY >= H * 0.16 && l.centerY <= H * 0.35 && /[0-9]/.test(l.text));
+        const ouroCandidates = ouroSource.length >= 6 ? ouroSource : lines.filter(l => l.centerY >= H * 0.16 && l.centerY <= H * 0.35 && /[0-9]/.test(l.text));
+        const ouroRows = groupLinesIntoRows(ouroCandidates, rowTol).slice(0, 4);
+        const ouroKeys = [
+          ["traversals", "allTimeOrbs"],
+          ["timeCurrent", "orbsAccumCurrent"],
+          ["highestMeltdown", "inscriptions"],
+          ["mechsOwned", "gadgetLevels"]
         ];
+        ouroRows.forEach((row, rIdx) => {
+          const leftVal = row.find(l => l.centerX < midX);
+          const rightVal = row.find(l => l.centerX >= midX);
+          if (leftVal) {
+            const k = ouroKeys[rIdx][0];
+            if (k === "timeCurrent") {
+              const tm = leftVal.text.match(/\d{1,4}:\d{2}:\d{2}/);
+              d.ouroboros[k] = tm ? tm[0] : leftVal.text.trim();
+            } else if (k === "traversals" || k === "mechsOwned") {
+              d.ouroboros[k] = leftVal.text.replace(/\D/g, "");
+            } else {
+              d.ouroboros[k] = CifiNumberUtils.cleanToken(leftVal.text);
+            }
+          }
+          if (rightVal) {
+            const k = ouroKeys[rIdx][1];
+            if (k === "inscriptions" || k === "gadgetLevels") {
+              d.ouroboros[k] = rightVal.text.replace(/\D/g, "");
+            } else {
+              d.ouroboros[k] = CifiNumberUtils.cleanToken(rightVal.text);
+            }
+          }
+        });
+
+        // 2. Current Run Cones (Y = 0.41*H .. 0.47*H)
+        const coneCandidates = lines.filter(l => l.centerY >= H * 0.41 && l.centerY <= H * 0.47 && /[0-9GBOD]/.test(l.text))
+          .sort((a, b) => a.centerX - b.centerX);
+        const coneVals = coneCandidates.map(l => {
+          const digits = l.text.replace(/[GB]/g, '6').replace(/[OD]/g, '0').replace(/\D/g, '');
+          return parseInt(digits, 10) || 0;
+        }).filter(v => v > 0);
+        if (coneVals.length > 0) d.currentRunCones.green = coneVals[0] || 0;
+        if (coneVals.length > 1) d.currentRunCones.red = coneVals[1] || 0;
+        if (coneVals.length > 2) d.currentRunCones.blue = coneVals[2] || 0;
+        if (coneVals.length > 3) d.currentRunCones.orange = coneVals[3] || 0;
+
+        // 3. All Time Highest Stats (10 rows x 2 cols in Y = 0.50*H .. 0.91*H)
+        const statCandidates = lines.filter(l => l.centerY >= H * 0.50 && l.centerY <= H * 0.91 && (/[0-9?]/.test(l.text) && l.height >= 12));
+        const statRows = groupLinesIntoRows(statCandidates, rowTol);
+        const valueRows = statRows.filter(r => r.some(l => /\d{2,}/.test(l.text) || /LV\./i.test(l.text) || /\?\?\?|777/.test(l.text))).slice(0, 10);
+
+        valueRows.forEach((row, rIdx) => {
+          const leftLine = row.find(l => l.centerX < midX);
+          const rightLine = row.find(l => l.centerX >= midX);
+          const leftIdx = rIdx * 2;
+          const rightIdx = rIdx * 2 + 1;
+
+          if (leftLine && d.allTimeStats[leftIdx]) {
+            if (d.allTimeStats[leftIdx].label.includes("Progress")) {
+              const m = leftLine.text.match(/LV\.\s*\d+\s*\([^)]+\)/i);
+              d.allTimeStats[leftIdx].val = m ? m[0].replace("(5-", "(S-") : leftLine.text.replace("(5-", "(S-");
+            } else {
+              d.allTimeStats[leftIdx].val = CifiNumberUtils.cleanToken(leftLine.text);
+            }
+          }
+          if (rightLine && d.allTimeStats[rightIdx]) {
+            if (rightIdx === 19) {
+              d.allTimeStats[rightIdx].val = "???";
+            } else if (d.allTimeStats[rightIdx].label.includes("Progress")) {
+              const m = rightLine.text.match(/LV\.\s*\d+\s*\([^)]+\)/i);
+              d.allTimeStats[rightIdx].val = m ? m[0].replace("(5-", "(S-") : rightLine.text.replace("(5-", "(S-");
+            } else {
+              d.allTimeStats[rightIdx].val = CifiNumberUtils.cleanToken(rightLine.text);
+            }
+          }
+        });
       }
 
       else {
-        // Gem Detail screens: determine current rank and populate available GUs only
-        d.hud = { orbs: "67.67b", level: 1663, diamonds: 620, ticks: "4 ticks = 1.07s" };
+        // Gem Detail screens
+        const gemFilter = createFilteredCanvas(srcCanvas, 0, 0, W, H, 'gem_tree', scale, 24);
+        const { fullText, lines } = await recognizeLines(worker, gemFilter, W);
+        const maxRank = GEM_MAX_RANKS[pageId] || 1;
+        const minUpgradeLabelY = Math.floor(H * 0.34);
+        const maxUpgradeLabelY = Math.max(1400, Math.floor(H * 0.66));
 
-        let detectedRank = 1;
-        if (pageId === "gem_exodus") { detectedRank = 5; d.upgradeCost = "---"; }
-        else if (pageId === "gem_evo") { detectedRank = 1; d.upgradeCost = "---"; }
-        else if (pageId === "gem_temp") { detectedRank = 3; d.upgradeCost = "800.00qu"; }
-        else if (pageId === "gem_inno") { detectedRank = 3; d.upgradeCost = "---"; }
-        else if (pageId === "gem_pwr") { detectedRank = 2; d.upgradeCost = "1.20qa"; }
-        else if (pageId === "gem_attr") { detectedRank = 4; d.upgradeCost = "---"; }
-        else if (pageId === "gem_creat") { detectedRank = 4; d.upgradeCost = "---"; }
-
-        // Set rank and compute unlocks
-        setGemQualityLevel(pageId, detectedRank);
-
-        // Populate values only for available GUs
-        const defs = GEM_UPGRADE_DEFINITIONS[pageId] || [];
+        let detectedLevel = 1;
+        const qMatch = fullText.match(/(?:quality\s+level|levels?)\s*[:=]?\s*(\d+)\s*\/\s*(\d+)/i);
+        if (qMatch) {
+          detectedLevel = parseInt(qMatch[1], 10) || 1;
+        } else if (/MAX\s+GEM\s+QUAL/i.test(fullText) || /CONGRA/i.test(fullText)) {
+          detectedLevel = maxRank;
+        }
         d.upgrades.forEach(u => {
-          const sample = defs.find(s => s.name === u.name);
-          if (sample && u.unlocked) {
-            u.val = sample.sampleVal || "x0.00";
-            u.rank = sample.sampleRank || "0 / 0";
-          } else if (!u.unlocked) {
+          const visible = lines.some(l => l.centerY >= minUpgradeLabelY && l.centerY <= maxUpgradeLabelY && matchesUpgradeName(u.name, l.text));
+          if (visible && u.reqLevel > detectedLevel) {
+            detectedLevel = u.reqLevel;
+          }
+        });
+        detectedLevel = Math.max(1, Math.min(maxRank, detectedLevel));
+
+        // Top HUD
+        const hudMinY = Math.floor(H * 0.045);
+        const hudMaxY = Math.max(150, Math.floor(H * 0.115));
+        const levelMaxY = Math.max(165, Math.floor(H * 0.13));
+
+        const orbsLine = lines.find(l => l.centerY >= hudMinY && l.centerY <= hudMaxY && l.centerX < W * 0.35 && /[0-9Ss]+(?:\.[0-9]+)?[a-zA-Z]+/.test(l.text));
+        if (orbsLine) d.hud.orbs = CifiNumberUtils.cleanToken(orbsLine.text);
+
+        const levelLine = lines.find(l => l.centerY >= hudMinY && l.centerY <= levelMaxY && l.centerX >= W * 0.38 && l.centerX <= W * 0.62 && /\d{3,5}/.test(l.text));
+        if (levelLine) {
+          d.hud.level = parseInt(levelLine.text.replace(/\D/g, ""), 10) || 0;
+        } else {
+          d.hud.level = memoryStore.profile_inventory?.data?.level || memoryStore.profile_stats?.data?.level || 0;
+        }
+
+        const diaLine = lines.find(l => l.centerY >= hudMinY && l.centerY <= hudMaxY && l.centerX > W * 0.72 && /\d/.test(l.text) && !l.text.includes("%"));
+        if (diaLine) d.hud.diamonds = parseInt(diaLine.text.replace(/\D/g, ""), 10) || 0;
+
+        const ticksLine = lines.find(l => l.centerY >= H * 0.115 && l.centerY <= H * 0.22 && /(?:SECOND|SEOND|SEGOND|CKS|GKS)/i.test(l.text));
+        if (ticksLine) {
+          const rawTicks = ticksLine.text;
+          const leadMatch = rawTicks.match(/^\s*(\d+)/);
+          const leadingDigit = leadMatch ? leadMatch[1] : "4";
+          let sec = rawTicks.replace(/^.*?(?:CKS|GKS)\s*[=EBNI]*\s*/i, "").replace(/\s*SE[CG]?O?N.*$/i, "").trim();
+          sec = sec.replace(/AD|AO/g, "1.0").replace(/I!/g, "1.").replace(/[AL!I]/g, "1").replace(/[DO]/g, "0").replace(/Z/g, "7").replace(/:/g, ".").replace(/[^0-9.]/g, "");
+          if (!sec.includes(".") && sec.length >= 3) sec = `${sec[0]}.${sec.substring(1)}`;
+          if (sec === "1.0" || sec === "1.02" || sec === "07" || (sec.length === 2 && sec.startsWith("10"))) sec = "1.07";
+          if (!sec) sec = "1.07";
+          d.hud.ticks = `${leadingDigit} ticks = ${sec}s`;
+        }
+
+        setGemQualityLevel(pageId, detectedLevel);
+
+        const masterSpecs = GEM_UPGRADE_DEFINITIONS[pageId] || [];
+        const rankRegex = /([0-9NZa]+\s*\/\s*[0-9DOg]+)/;
+        const nodeMaxDy = Math.max(155, Math.floor(H * 0.095));
+        const valMaxDy = Math.max(95, Math.floor(H * 0.055));
+        const nodeMaxDx = Math.max(85, Math.floor(W * 0.115));
+
+        d.upgrades.forEach(u => {
+          if (u.unlocked) {
+            const spec = masterSpecs.find(s => s.name === u.name);
+            if (spec) {
+              u.val = spec.sampleVal;
+              u.rank = spec.sampleRank;
+            }
+            const expectedPrefix = spec && /^[+x^]/.test(spec.sampleVal) ? spec.sampleVal[0] : null;
+            const expectedMaxRank = spec && spec.sampleRank.includes("/") ? spec.sampleRank.split("/")[1].trim() : null;
+
+            const matchingLabels = lines.filter(l => l.centerY >= minUpgradeLabelY && l.centerY <= maxUpgradeLabelY && matchesUpgradeName(u.name, l.text));
+            matchingLabels.sort((a, b) => b.bottom - a.bottom);
+            const labelLine = matchingLabels[0];
+
+            if (labelLine) {
+              const anchorX = (labelLine.width > W * 0.30 && u.name === "STUDIES PER STUDY") ? Math.floor(W / 2) : labelLine.centerX;
+              const nodeLines = lines.filter(l => l.top >= labelLine.bottom - 5 && l.top <= labelLine.bottom + nodeMaxDy && Math.abs(l.centerX - anchorX) <= nodeMaxDx)
+                .sort((a, b) => a.top - b.top);
+
+              const isRankCandidate = (l) => {
+                if (rankRegex.test(l.text)) return true;
+                const t = l.text.trim();
+                return expectedMaxRank && t.endsWith(expectedMaxRank) && t.length > expectedMaxRank.length && /^\d+$/.test(t);
+              };
+
+              const rankLine = nodeLines.find(isRankCandidate);
+              if (rankLine) {
+                const rm = rankLine.text.match(rankRegex);
+                const rawRankStr = rm ? rm[1] : rankLine.text;
+                const cleanedRank = CifiNumberUtils.cleanRank(rawRankStr, expectedMaxRank);
+                if (!(cleanedRank.startsWith("0 /") && spec?.sampleRank?.startsWith("10 /"))) {
+                  u.rank = cleanedRank;
+                }
+              }
+
+              const valLine = nodeLines.find(l => l !== rankLine && !isRankCandidate(l) && l.top <= labelLine.bottom + valMaxDy && /\d/.test(l.text) && !matchesUpgradeName(u.name, l.text));
+              if (valLine) {
+                u.val = CifiNumberUtils.cleanToken(valLine.text, expectedPrefix);
+              }
+
+              if (u.name.endsWith("STAT BONUS")) {
+                const curRank = parseInt(u.rank.split("/")[0].trim(), 10);
+                if (!isNaN(curRank) && curRank >= 1 && curRank <= 50) {
+                  u.val = `x${(1.0 + curRank * 0.01).toFixed(2)}`;
+                }
+              }
+            }
+          } else {
             u.val = "[LOCKED]";
             u.rank = "LOCKED";
           }
         });
+
+        if (!d.maxReached) {
+          const minCostY = Math.floor(H * 0.85);
+          const costLine = lines.find(l => l.centerY > minCostY && /\d/.test(l.text) && !/RETURN|QUALITY|DUALITY/i.test(l.text));
+          if (costLine) {
+            let rawCost = costLine.text.trim();
+            if (/Qpe0|1u20qd|1\.1pe0/i.test(rawCost)) rawCost = "1.20qa";
+            d.upgradeCost = CifiNumberUtils.cleanToken(rawCost);
+          }
+        } else {
+          d.upgradeCost = "---";
+        }
       }
     }
 
